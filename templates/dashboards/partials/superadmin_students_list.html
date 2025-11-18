@@ -1,0 +1,26 @@
+<div class="table-responsive">
+  <table class="table table-sm table-dark table-striped">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Full name</th>
+        <th>Email</th>
+        <th>Joined</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.user.username }}</td>
+        <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+        <td>{{ s.user.email }}</td>
+        <td>{{ s.user.date_joined|date:'Y-m-d' }}</td>
+        <td><a class="btn btn-sm btn-light" href="{% url 'admin_download_student_report' s.user.id %}"><i class="fas fa-download"></i> Report</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No students found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

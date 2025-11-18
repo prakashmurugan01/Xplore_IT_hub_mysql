@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Record Fee Payment</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="student_id" class="form-label">Student</label>
+      <select name="student_id" id="student_id" class="form-select">
+        {% for s in students %}
+        <option value="{{ s.id }}">{{ s.user.username }} - {{ s.user.get_full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="amount" class="form-label">Amount</label>
+      <input type="text" name="amount" id="amount" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label for="method" class="form-label">Method</label>
+      <input type="text" name="method" id="method" class="form-control" placeholder="cash / offline / bank" />
+    </div>
+    <button class="btn btn-primary" type="submit">Record Fee</button>
+  </form>
+  <br><br>
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm transition-btn" 
+      onclick="window.history.back();" 
+      aria-label="Go back"
+      style="transition: all 0.3s ease; transform: scale(1);"
+      onmouseover="this.style.transform='scale(1.05)'" 
+      onmouseout="this.style.transform='scale(1)'">Back</button>
+    <a class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm transition-btn"
+      href="{% url 'role_redirect' %}" 
+      role="button"
+      aria-label="Cancel and return"
+      style="transition: all 0.3s ease; transform: scale(1);"
+      onmouseover="this.style.transform='scale(1.05)'" 
+      onmouseout="this.style.transform='scale(1)'">Cancel</a>
+  </div>
+</div>
+</div>
+{% endblock %}

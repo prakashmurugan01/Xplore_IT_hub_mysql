@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Add Staff{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Add {{ profile.user.get_full_name|default:profile.user.username }} as Staff</h3>
+  <p>Username: <strong>{{ profile.user.username }}</strong></p>
+  <p>Role: <strong>{{ profile.role }}</strong></p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="position" class="form-label">Position</label>
+      <input type="text" name="position" id="position" class="form-control" value="{{ profile.user.get_full_name|default:'Teacher' }}" />
+    </div>
+    <button class="btn btn-success" type="submit">Confirm Add</button>
+    <a class="btn btn-secondary" href="{% url 'admin2_staff' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

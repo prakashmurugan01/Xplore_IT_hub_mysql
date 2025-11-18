@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Python Full-Stack Team | Course Instructors{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="Meet our expert Python Full-Stack instructors with 10+ years of industry experience in Django, React, and modern web technologies.">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .team-header {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .instructor-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .instructor-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .instructor-image {
+        height: 320px;
+        object-fit: cover;
+        object-position: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .instructor-image.loading {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .card-body-content {
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .skill-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        margin: 0.25rem;
+        background: #f8f9fa;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        color: #495057;
+        border: 1px solid #dee2e6;
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .instructor-image {
+            height: 280px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section -->
+    <header class="team-header text-center mb-5">
+        <h1 class="display-5 fw-bold mb-3">Python Full-Stack Team</h1>
+        <p class="lead text-muted">
+            Meet the expert instructors and mentors for our Python Full-Stack course. 
+            Hands-on, industry-focused, and continuously updated.
+        </p>
+    </header>
+
+    <!-- Team Members Grid -->
+    <div class="row g-4 mb-5" role="list">
+        {% comment %} Instructor 1 {% endcomment %}
+        <div class="col-12 col-md-6 col-lg-4" role="listitem">
+            <article class="card instructor-card shadow-sm border-0">
+                <img 
+                    src="https://media.licdn.com/dms/image/v2/D5622AQFKYbp000NqHQ/feedshare-shrink_1280/B56ZiyBSGCHUAk-/0/1755333338175?e=1762992000&v=beta&t=hofQ3y__j0NzwfVIeiJm73S3pUjoQdP_DiJRL17hCZQ" 
+                    class="card-img-top instructor-image" 
+                    alt="Nataraj Adithya S - Lead Instructor"
+                    loading="lazy"
+                    onerror="this.src='https://ui-avatars.com/api/?name=Nataraj+Adithya+S&size=600&background=667eea&color=fff&bold=true'"
+                >
+                <div class="card-body card-body-content">
+                    <div>
+                        <h2 class="card-title h4 mb-1">Nataraj Adithya S</h2>
+                        <p class="text-primary fw-semibold small mb-3">Lead Instructor — Full-Stack & AI</p>
+                        <p class="card-text text-secondary mb-3">
+                            Senior full-stack developer with 10+ years of experience building Django and
+                            React applications. Specializes in scalable backend systems and ML integrations.
+                        </p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <p class="mb-2 small fw-bold text-dark">Core Skills:</p>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <span class="skill-badge">Django</span>
+                            <span class="skill-badge">REST API</span>
+                            <span class="skill-badge">React</span>
+                            <span class="skill-badge">PostgreSQL</span>
+                            <span class="skill-badge">Docker</span>
+                            <span class="skill-badge">ML</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="bi bi-award me-1"></i>
+                            <span>3+ years teaching</span>
+                        </small>
+                        <div class="btn-group" role="group" aria-label="Instructor actions">
+                            <a href="{% url 'instructor_profile' slug='nataraj-adithya-s' %}" 
+                               class="btn btn-sm btn-primary" 
+                               aria-label="View Nataraj Adithya S's full profile">
+                                <i class="bi bi-person-circle me-1"></i>Profile
+                            </a>
+                            <a href="mailto:nataraj@example.com" 
+                               class="btn btn-sm btn-outline-secondary"
+                               aria-label="Send email to Nataraj Adithya S">
+                                <i class="bi bi-envelope me-1"></i>Contact
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        {% comment %} Instructor 2 {% endcomment %}
+        <div class="col-12 col-md-6 col-lg-4" role="listitem">
+            <article class="card instructor-card shadow-sm border-0">
+                <img 
+                    src="https://th.bing.com/th/id/OIP.FTHq_r1ZW67TsmTpaPdg4gHaHa?w=155&h=180&c=7&r=0&o=7&cb=12&dpr=1.4&pid=1.7&rm=3" 
+                    class="card-img-top instructor-image" 
+                    alt="Gokul - Backend Instructor"
+                    loading="lazy"
+                    onerror="this.src='https://ui-avatars.com/api/?name=Gokul&size=600&background=764ba2&color=fff&bold=true'"
+                >
+                <div class="card-body card-body-content">
+                    <div>
+                        <h2 class="card-title h4 mb-1">Gokul</h2>
+                        <p class="text-primary fw-semibold small mb-3">Backend Instructor</p>
+                        <p class="card-text text-secondary mb-3">
+                            Expert in backend architectures, database design, and performance tuning. 
+                            Passionate about teaching clean, testable code and API design patterns.
+                        </p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <p class="mb-2 small fw-bold text-dark">Core Skills:</p>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <span class="skill-badge">Django</span>
+                            <span class="skill-badge">PostgreSQL</span>
+                            <span class="skill-badge">Celery</span>
+                            <span class="skill-badge">Redis</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="bi bi-award me-1"></i>
+                            <span>2+ years teaching</span>
+                        </small>
+                        <div class="btn-group" role="group" aria-label="Instructor actions">
+                            <a href="{% url 'instructor_profile' slug='gokul' %}" 
+                               class="btn btn-sm btn-primary"
+                               aria-label="View Gokul's full profile">
+                                <i class="bi bi-person-circle me-1"></i>Profile
+                            </a>
+                            <a href="mailto:gokul@example.com" 
+                               class="btn btn-sm btn-outline-secondary"
+                               aria-label="Send email to Gokul">
+                                <i class="bi bi-envelope me-1"></i>Contact
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        {% comment %} Dynamic instructors from context {% endcomment %}
+        {% for instructor in instructors %}
+        <div class="col-12 col-md-6 col-lg-4" role="listitem">
+            <article class="card instructor-card shadow-sm border-0">
+                <img 
+                    src="{{ instructor.photo.url }}" 
+                    class="card-img-top instructor-image" 
+                    alt="{{ instructor.full_name }} - {{ instructor.role }}"
+                    loading="lazy"
+                    onerror="this.src='https://ui-avatars.com/api/?name={{ instructor.full_name|urlencode }}&size=600&background=667eea&color=fff&bold=true'"
+                >
+                <div class="card-body card-body-content">
+                    <div>
+                        <h2 class="card-title h4 mb-1">{{ instructor.full_name }}</h2>
+                        <p class="text-primary fw-semibold small mb-3">{{ instructor.role }}</p>
+                        <p class="card-text text-secondary mb-3">{{ instructor.bio|truncatewords:30 }}</p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <p class="mb-2 small fw-bold text-dark">Core Skills:</p>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            {% for skill in instructor.skills_list %}
+                            <span class="skill-badge">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="bi bi-award me-1"></i>
+                            <span>{{ instructor.experience }}+ years teaching</span>
+                        </small>
+                        <div class="btn-group" role="group" aria-label="Instructor actions">
+                            <a href="{% url 'instructor_profile' slug=instructor.slug %}" 
+                               class="btn btn-sm btn-primary"
+                               aria-label="View {{ instructor.full_name }}'s full profile">
+                                <i class="bi bi-person-circle me-1"></i>Profile
+                            </a>
+                            <a href="mailto:{{ instructor.email }}" 
+                               class="btn btn-sm btn-outline-secondary"
+                               aria-label="Send email to {{ instructor.full_name }}">
+                                <i class="bi bi-envelope me-1"></i>Contact
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Call to Action -->
+    <section class="cta-section text-center mt-5">
+        <h2 class="h3 mb-3 fw-bold">Ready to Learn from Industry Experts?</h2>
+        <p class="mb-4 opacity-90">Join hundreds of students already mastering full-stack development</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'choose' %}" 
+               class="btn btn-light btn-lg px-4 fw-semibold">
+                <i class="bi bi-check-circle me-2"></i>Choose This Track
+            </a>
+            <a href="{% url 'register' %}" 
+               class="btn btn-outline-light btn-lg px-4 fw-semibold">
+                <i class="bi bi-person-plus me-2"></i>Enroll Now
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}

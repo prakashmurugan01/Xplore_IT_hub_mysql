@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2>Edit Student - {{ profile.user.username }}</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Admin Dashboard</a>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-danger" href="{% url 'superadmin_student_delete' profile.id %}">Delete</a>
+    <a class="btn btn-secondary" href="{% url 'superadmin_student_management' %}">Back</a>
+  </form>
+</div>
+{% endblock %}

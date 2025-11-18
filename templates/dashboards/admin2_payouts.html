@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin2 Payouts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Student Payout Requests</h2>
+  <table class="table">
+    <thead><tr><th>Student</th><th>Amount</th><th>Requested On</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for p in payouts %}
+      <tr>
+        <td>{{ p.student.user.username }}</td>
+        <td>{{ p.amount }}</td>
+        <td>{{ p.requested_on }}</td>
+        <td>{{ p.status }}</td>
+        <td><a class="btn btn-sm btn-success" href="#">Process</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No payout requests</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

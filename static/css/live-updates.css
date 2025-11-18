@@ -1,0 +1,230 @@
+/* Live Updates & Activity Styles */
+
+/* Activity Timeline */
+.activity-timeline {
+    position: relative;
+    padding: 0;
+}
+
+.activity-item {
+    position: relative;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.activity-item.new-update {
+    animation: newItemGlow 2s ease-out;
+}
+
+/* Activity Icons */
+.activity-icon {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1rem;
+}
+
+.activity-icon[data-type="performance"] {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+}
+
+.activity-icon[data-type="attendance"] {
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    color: white;
+}
+
+.activity-icon[data-type="assignment"] {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    color: white;
+}
+
+.activity-icon[data-type="exam"] {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    color: white;
+}
+
+/* Activity Content */
+.activity-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.activity-details {
+    font-size: 0.85rem;
+}
+
+/* Live Status Bar */
+.live-status-bar {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    position: relative;
+}
+
+.pulse-dot::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: inherit;
+    border-radius: inherit;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* New Activity Alert */
+.new-activity-alert {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.new-activity-alert.show {
+    transform: translateY(0);
+}
+
+/* Empty State */
+.empty-state-icon {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.1);
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+@keyframes newItemGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+/* Auto-refresh Button States */
+.btn-outline-primary.active {
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    border-color: transparent;
+    color: white;
+}
+
+/* Progress Bars */
+.progress {
+    background: rgba(255, 255, 255, 0.05);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+    100% {
+        left: 100%;
+    }
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%) !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .activity-item {
+        padding: 0.75rem;
+    }
+    
+    .activity-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .activity-title {
+        font-size: 0.85rem;
+    }
+    
+    .activity-time {
+        font-size: 0.75rem;
+    }
+    
+    .activity-details {
+        font-size: 0.8rem;
+    }
+}

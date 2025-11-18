@@ -1,0 +1,508 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Schedule Broadcast Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary: #667eea;
+    --secondary: #764ba2;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --info: #17a2b8;
+  }
+
+  body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+  }
+
+  .broadcast-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .header-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+
+  .header-card h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 700;
+  }
+
+  .header-card p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.95;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .stat-box {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  .stat-box .value {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .stat-box .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .filters {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-group label {
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+
+  .filter-group input,
+  .filter-group select {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s;
+  }
+
+  .filter-group input:focus,
+  .filter-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .notifications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .notification-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid var(--info);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notification-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(102, 126, 234, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .notification-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+
+  .notification-card:hover::before {
+    opacity: 1;
+  }
+
+  .notification-card.unread {
+    background: linear-gradient(to right, #e8f4f8 0%, white 50%);
+    border-left-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  }
+
+  .notification-card.success {
+    border-left-color: var(--success);
+  }
+
+  .notification-card.warning {
+    border-left-color: var(--warning);
+  }
+
+  .notification-card.danger {
+    border-left-color: var(--danger);
+  }
+
+  .notif-header {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+  }
+
+  .notif-icon.success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+  }
+
+  .notif-icon.warning {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+  }
+
+  .notif-icon.info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+  }
+
+  .notif-title {
+    flex: 1;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+  }
+
+  .notif-time {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  .notif-message {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .notif-meta {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge-custom {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+  }
+
+  .badge-warning {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+  }
+
+  .badge-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    color: #6c757d;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--primary);
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @media (max-width: 768px) {
+    .broadcast-container {
+      padding: 0 0.5rem;
+    }
+
+    .notifications-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .stat-box {
+      padding: 0.75rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="broadcast-container">
+  <!-- Header Card -->
+  <div class="header-card">
+    <h1>
+      <i class="fas fa-broadcast-tower"></i>
+      Schedule Broadcast Notifications
+    </h1>
+    <p>Real-time view of schedule notifications sent to students and teachers</p>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="value" id="total-notifs">0</div>
+        <div class="label">Total Notifications</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="unread-notifs">0</div>
+        <div class="label">Unread</div>
+      </div>
+      <div class="stat-box">
+        <div class="live-indicator">
+          <span class="live-dot"></span>
+          <span>Live</span>
+        </div>
+        <div class="label" style="margin-top: 0.5rem;">Status</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label for="filter-search">Search:</label>
+      <input type="text" id="filter-search" placeholder="Search notifications...">
+      
+      <label for="filter-status" style="margin-left: 2rem;">Status:</label>
+      <select id="filter-status">
+        <option value="">All</option>
+        <option value="unread">Unread Only</option>
+        <option value="read">Read Only</option>
+      </select>
+
+      <button class="btn btn-primary" onclick="refreshNotifications()" style="margin-left: 2rem;">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Notifications Grid -->
+  <div id="notifications-container" class="notifications-grid">
+    <div class="empty-state">
+      <i class="fas fa-hourglass-half"></i>
+      <p>Loading notifications...</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let allNotifications = [];
+  let pollInterval = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    refreshNotifications();
+    // Poll for new notifications every 10 seconds
+    pollInterval = setInterval(refreshNotifications, 10000);
+
+    // Setup filters
+    document.getElementById('filter-search').addEventListener('input', applyFilters);
+    document.getElementById('filter-status').addEventListener('change', applyFilters);
+  });
+
+  async function refreshNotifications() {
+    try {
+      const response = await fetch('{% url "api_schedule_notifications" %}');
+      if (!response.ok) throw new Error('Failed to fetch');
+      
+      const data = await response.json();
+      allNotifications = data.notifications || [];
+      
+      // Update stats
+      document.getElementById('total-notifs').textContent = data.count || 0;
+      document.getElementById('unread-notifs').textContent = data.unread_count || 0;
+      
+      renderNotifications(allNotifications);
+      console.log('Notifications refreshed:', allNotifications.length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      document.getElementById('notifications-container').innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-exclamation-circle"></i>
+          <p>Failed to load notifications</p>
+        </div>
+      `;
+    }
+  }
+
+  function renderNotifications(notifs) {
+    const container = document.getElementById('notifications-container');
+    if (!notifs || notifs.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-bell-slash"></i>
+          <h4>No notifications yet</h4>
+          <p>Schedule notifications will appear here when broadcasts are sent</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = notifs.map(notif => {
+      const created = new Date(notif.created_at);
+      const timeAgo = formatTimeAgo(created);
+      const icon = notif.is_read ? 'fa-envelope-open' : 'fa-envelope';
+      const status = notif.is_read ? 'read' : 'unread';
+      
+      return `
+        <div class="notification-card ${status}" data-id="${notif.id}">
+          <div class="notif-header">
+            <div class="notif-icon info">
+              <i class="fas ${icon}"></i>
+            </div>
+            <div>
+              <h5 class="notif-title">${escapeHtml(notif.title)}</h5>
+              <div class="notif-time">${timeAgo}</div>
+            </div>
+          </div>
+          <p class="notif-message">${escapeHtml(notif.message)}</p>
+          <div class="notif-meta">
+            <span class="badge-custom badge-info">${notif.is_read ? 'Read' : 'Unread'}</span>
+            <span class="badge-custom badge-info">${new Date(notif.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('filter-search').value.toLowerCase();
+    const status = document.getElementById('filter-status').value;
+    
+    let filtered = allNotifications.filter(n => {
+      const matchSearch = !search || 
+        n.title.toLowerCase().includes(search) || 
+        n.message.toLowerCase().includes(search);
+      
+      const matchStatus = !status || 
+        (status === 'unread' && !n.is_read) || 
+        (status === 'read' && n.is_read);
+      
+      return matchSearch && matchStatus;
+    });
+    
+    renderNotifications(filtered);
+  }
+
+  function formatTimeAgo(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    
+    return date.toLocaleDateString();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Cleanup on unload
+  window.addEventListener('beforeunload', function() {
+    if (pollInterval) clearInterval(pollInterval);
+  });
+</script>
+{% endblock %}

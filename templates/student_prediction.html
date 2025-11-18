@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Performance Prediction{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">
+        <i class="fas fa-brain"></i> AI Performance Prediction
+    </h2>
+    
+    {% if prediction %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-{{ prediction.color }} text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Your Performance Forecast
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="display-1 text-{{ prediction.color }}">
+                            {{ prediction.score }}%
+                        </div>
+                        <h3 class="text-{{ prediction.color }}">{{ prediction.category }}</h3>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                                <h5>Attendance</h5>
+                                <h3 class="text-primary">{{ prediction.attendance }}%</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                <h5>Average Marks</h5>
+                                <h3 class="text-warning">{{ prediction.avg_marks }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-lightbulb"></i> AI Recommendations:</h5>
+                        <ul class="mb-0">
+                            {% if prediction.attendance < 75 %}
+                            <li>Focus on improving attendance (Target: 75%+)</li>
+                            {% endif %}
+                            {% if prediction.avg_marks < 70 %}
+                            <li>Dedicate more time to assignments and study</li>
+                            {% endif %}
+                            {% if prediction.score >= 85 %}
+                            <li>Excellent work! Keep maintaining your consistency</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-info-circle"></i> Not enough data for prediction. Complete more assignments and attend classes regularly.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

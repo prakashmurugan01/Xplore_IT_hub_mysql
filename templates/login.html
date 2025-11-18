@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Xplore IT Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/XIC-logo-1.webp"
+                    alt="XPLORE IT CORP Logo" class="brand-logo" width="200" height="100" />
+                <i class="fas fa-graduation-cap fa-4x text-primary mb-3"></i>
+                <h2>Xplore IT Hub</h2>
+                <p class="text-muted">Smart Campus Management</p>
+            </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-custom">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+            </div>
+
+            <div class="text-center mt-2">
+                <a href="{% url 'home' %}" class="btn btn-secondary w-100">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-4">
+        <p>&copy; 2024 Xplore IT Hub. All rights reserved.</p>
+        <h4>Developed by Prakash</h4>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

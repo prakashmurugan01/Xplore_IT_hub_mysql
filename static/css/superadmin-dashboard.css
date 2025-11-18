@@ -1,0 +1,496 @@
+/* ==========================================================================
+   Superadmin Dashboard Styles
+   ========================================================================== */
+
+/* Theme Variables */
+:root {
+  --bg-dark-primary: #0f172a;
+  --bg-dark-secondary: #020617;
+  --bg-light-primary: #f8fafc;
+  --bg-light-secondary: #e2e8f0;
+  --text-dark: #e2e8f0;
+  --text-light: #0f172a;
+  --card-bg-dark: rgba(30, 41, 59, 0.6);
+  --card-bg-light: rgba(255, 255, 255, 0.9);
+  --border-dark: rgba(148, 163, 184, 0.2);
+  --border-light: rgba(148, 163, 184, 0.3);
+  --accent-blue: #3b82f6;
+  --accent-indigo: #6366f1;
+  --stat-cyan: #38bdf8;
+  --stat-muted: #cbd5e1;
+  --transition-speed: 0.3s;
+}
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+body {
+  background: radial-gradient(circle at top left, var(--bg-dark-primary), var(--bg-dark-secondary) 60%);
+  color: var(--text-dark);
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+  transition: all 0.5s ease;
+}
+
+body.light-mode {
+  background: linear-gradient(135deg, var(--bg-light-primary), var(--bg-light-secondary));
+  color: var(--text-light);
+}
+
+.container {
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+/* ==========================================================================
+   Dashboard Cards
+   ========================================================================== */
+
+.dashboard-card {
+  background: var(--card-bg-dark);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-dark);
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.25);
+}
+
+body.light-mode .dashboard-card {
+  background: var(--card-bg-light);
+  color: #1e293b;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .dashboard-card:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn-outline-light,
+.btn-primary {
+  border-radius: 10px;
+  transition: all var(--transition-speed) ease;
+  font-weight: 500;
+}
+
+.btn-outline-light:hover {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+  color: white;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+  transform: translateY(-2px);
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+}
+
+#theme-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-dark);
+  font-size: 1.2rem;
+  transition: all var(--transition-speed) ease;
+  cursor: pointer;
+}
+
+#theme-toggle:hover {
+  color: var(--accent-blue);
+  transform: rotate(15deg);
+}
+
+body.light-mode #theme-toggle {
+  color: var(--text-light);
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+h1,
+h5 {
+  color: #f8fafc;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+body.light-mode h1,
+body.light-mode h5 {
+  color: #1e293b;
+}
+
+/* ==========================================================================
+   Statistics
+   ========================================================================== */
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--stat-cyan);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  transition: all var(--transition-speed) ease;
+}
+
+.stat-label {
+  color: var(--stat-muted);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+body.light-mode .stat-number {
+  color: var(--accent-blue);
+  text-shadow: none;
+}
+
+body.light-mode .stat-label {
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+.table-dark {
+  border-radius: 10px;
+  overflow: hidden;
+  border: none;
+}
+
+.table-dark th {
+  color: #93c5fd;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.table-dark td {
+  color: var(--text-dark);
+  vertical-align: middle;
+}
+
+.table-dark tbody tr {
+  transition: background var(--transition-speed) ease;
+}
+
+.table-dark tbody tr:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.table-responsive {
+  border-radius: 10px;
+}
+
+body.light-mode .table-dark {
+  background: white;
+}
+
+body.light-mode .table-dark th {
+  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+body.light-mode .table-dark td {
+  color: #1e293b;
+}
+
+body.light-mode .table-dark tbody tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* ==========================================================================
+   Attendance Cards
+   ========================================================================== */
+
+.attendance-stat-card {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  color: var(--text-dark);
+  transition: all var(--transition-speed) ease;
+  border: 1px solid var(--border-dark);
+  min-width: 120px;
+  backdrop-filter: blur(10px);
+}
+
+.attendance-stat-card:hover {
+  background: rgba(59, 130, 246, 0.15);
+  transform: translateY(-3px);
+  border-color: var(--accent-blue);
+}
+
+body.light-mode .attendance-stat-card {
+  background: white;
+  border: 1px solid var(--border-light);
+}
+
+body.light-mode .attendance-stat-card:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* ==========================================================================
+   Chart Container
+   ========================================================================== */
+
+canvas {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+body.light-mode canvas {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   Modals
+   ========================================================================== */
+
+.modal-content {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border-dark);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  color: var(--text-dark);
+}
+
+body.light-mode .modal-content {
+  background: white;
+  color: var(--text-light);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-dark);
+}
+
+body.light-mode .modal-header,
+body.light-mode .modal-footer {
+  border-color: var(--border-light);
+}
+
+/* ==========================================================================
+   Toast Notifications
+   ========================================================================== */
+
+.toast {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-dark);
+  color: var(--text-dark);
+}
+
+.toast-header {
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid var(--border-dark);
+  color: var(--text-dark);
+}
+
+body.light-mode .toast {
+  background: white;
+  color: var(--text-light);
+}
+
+body.light-mode .toast-header {
+  background: rgba(248, 250, 252, 0.95);
+  color: var(--text-light);
+}
+
+.toast.toast-success {
+  border-left: 4px solid #10b981;
+}
+
+.toast.toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast.toast-info {
+  border-left: 4px solid var(--accent-blue);
+}
+
+/* ==========================================================================
+   Scrollbar
+   ========================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+  transition: background var(--transition-speed) ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+/* ==========================================================================
+   Loading States
+   ========================================================================== */
+
+.skeleton-loader {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 20px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-card {
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .btn-outline-light,
+  .btn-primary {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .attendance-stat-card {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus styles for keyboard navigation */
+a:focus,
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .dashboard-card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .btn,
+  #theme-toggle {
+    display: none;
+  }
+}

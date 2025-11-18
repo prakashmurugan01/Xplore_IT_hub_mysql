@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignment: {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Assignment: {{ assignment.title }}</h1>
+        <div>
+            <a href="{% url 'download_assignment_report' assignment.id %}" class="btn btn-outline-secondary">Download CSV</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Course:</strong> {{ assignment.course.name }} ({{ assignment.course.code }})</p>
+            <p><strong>Due date:</strong> {% if assignment.due_date %}{{ assignment.due_date }}{% else %}<em>No due date</em>{% endif %}</p>
+            <p><strong>Max marks:</strong> {{ assignment.max_marks|default:100 }}</p>
+            <p>{{ assignment.description|default:'No description provided.' }}</p>
+            
+            {# Show attachments if any #}
+            {% if assignment.attachments.all %}
+            <div class="mt-3">
+              <p><strong>Attached Files:</strong></p>
+              <ul class="list-group">
+                {% for attachment in assignment.attachments.all %}
+                <li class="list-group-item">
+                  <a href="{{ attachment.file.url }}" download>
+                    <i class="bi bi-file"></i> {{ attachment.file.name }}
+                  </a>
+                  <small class="text-muted">({{ attachment.uploaded_at|date:'M d, Y H:i' }})</small>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Submissions ({{ submissions.count }})</h5>
+                <div>Graded: {{ graded_count }} | Avg: {{ avg_score }}</div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Submitted At</th>
+                                <th>File</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in submissions %}
+                            <tr>
+                                <td>{{ s.student.user.get_full_name|default:s.student.user.username }}</td>
+                                <td>{{ s.submission_date }}</td>
+                                <td>
+                                    {{ s.feedback|default:'-' }}
+                                </td>
+                                <td>
+                                    <input type="text" name="marks_{{ s.id }}" value="{{ s.marks_obtained|default:'' }}" style="width:80px;" />
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No submissions yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-end">
+                <button type="submit" class="btn btn-success">Save Grades</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

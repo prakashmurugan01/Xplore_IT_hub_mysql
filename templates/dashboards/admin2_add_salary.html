@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Add Salary Record</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- Staff Selection -->
+    <div class="mb-3">
+      <label for="staff_id" class="form-label">Select Staff</label>
+      <select name="staff_id" id="staff_id" class="form-select" required>
+        <option value="" disabled selected>-- Choose Staff --</option>
+        {% for s in staff %}
+          <option value="{{ s.id }}" {% if selected_staff_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+            {{ s.profile.user.username }} - {{ s.position }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Salary Amount -->
+    <div class="mb-3">
+      <label for="amount" class="form-label">Salary Amount (₹)</label>
+      <input type="number" name="amount" id="amount" class="form-control" min="0" step="0.01" required>
+    </div>
+
+    <!-- Advance Checkbox -->
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="is_advance" id="is_advance">
+      <label class="form-check-label" for="is_advance">Mark as Advance Payment</label>
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-3">
+      <label for="notes" class="form-label">Notes (Optional)</label>
+      <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Any remarks..."></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Record Salary</button>
+  </form>
+
+  <!-- Navigation Buttons -->
+  <div class="d-flex gap-2 mt-4">
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back();">Back</button>
+    <a href="{% url 'role_redirect' %}" class="btn btn-sm btn-outline-danger">Cancel</a>
+  </div>
+</div>
+{% endblock %}

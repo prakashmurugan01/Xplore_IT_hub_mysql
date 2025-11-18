@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Top Buttons -->
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back();">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'view_profile' %}">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                    <h3 class="mb-0 fw-bold">
+                        <i class="fas fa-user-edit me-2"></i>Edit Your Profile
+                    </h3>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <form method="POST" enctype="multipart/form-data" id="editProfileForm">
+                        {% csrf_token %}
+
+                        <!-- PROFILE PICTURE SECTION -->
+                        <div class="text-center mb-4 pb-4 border-bottom">
+                            <h5 class="fw-bold mb-3">Profile Photo</h5>
+                            {% if profile.profile_pic %}
+                                <div class="mb-3">
+                                    <img src="{{ profile.profile_pic.url }}" 
+                                         class="rounded-circle shadow" 
+                                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #e9ecef;">
+                                </div>
+                            {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3 shadow"
+                                     style="width: 150px; height: 150px; font-size: 48px;">
+                                    <i class="fas fa-user-circle text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <input type="file" name="profile_pic" id="profilePicInput" class="form-control form-control-lg shadow-sm" 
+                                       accept="image/*" onchange="previewProfilePhoto(this)">
+                                <small class="text-muted d-block mt-2">JPG, PNG or GIF (Max 5MB)</small>
+                            </div>
+                            <div id="photoPreview" class="mt-2"></div>
+                        </div>
+
+                        <!-- FULL NAME -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-user"></i> First Name
+                                </label>
+                                <input type="text" name="first_name" class="form-control form-control-lg shadow-sm"
+                                       value="{{ request.user.first_name }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-user"></i> Last Name
+                                </label>
+                                <input type="text" name="last_name" class="form-control form-control-lg shadow-sm"
+                                       value="{{ request.user.last_name }}" required>
+                            </div>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-envelope"></i> Email Address
+                            </label>
+                            <input type="email" name="email" class="form-control form-control-lg shadow-sm"
+                                   value="{{ request.user.email }}" required>
+                        </div>
+
+                        <!-- PHONE + DEPARTMENT -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                <input type="tel" name="phone" class="form-control form-control-lg shadow-sm"
+                                       value="{{ profile.phone }}" placeholder="+1 (555) 000-0000">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-building"></i> Department
+                                </label>
+                                <input type="text" name="department" class="form-control form-control-lg shadow-sm"
+                                       value="{{ profile.department }}" placeholder="e.g., Computer Science">
+                            </div>
+                        </div>
+
+                        {% if profile.role == 'student' %}
+                        <!-- STUDENT FIELDS -->
+                        <div class="row border-top pt-3 mt-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-graduation-cap"></i> Class / Year
+                                </label>
+                                <input type="text" name="student_class"
+                                       class="form-control form-control-lg shadow-sm"
+                                       value="{{ profile.student_class }}" placeholder="e.g., CS-3A">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-id-card"></i> Roll Number
+                                </label>
+                                <input type="text" name="roll_number"
+                                       class="form-control form-control-lg shadow-sm"
+                                       value="{{ profile.roll_number }}" placeholder="e.g., 2023001">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- BUTTONS -->
+                        <div class="mt-4 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+
+                            <a href="{% url 'view_profile' %}" class="btn btn-outline-secondary btn-lg px-4 fw-bold">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function previewProfilePhoto(input) {
+    const previewDiv = document.getElementById('photoPreview');
+    previewDiv.innerHTML = '';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'rounded-circle shadow';
+            img.style.width = '150px';
+            img.style.height = '150px';
+            img.style.objectFit = 'cover';
+            img.style.border = '4px solid #0d6efd';
+            previewDiv.appendChild(img);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Form validation
+document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+    // Validate file size if file is selected
+    const fileInput = document.getElementById('profilePicInput');
+    if (fileInput.files.length > 0) {
+        const fileSize = fileInput.files[0].size;
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (fileSize > maxSize) {
+            e.preventDefault();
+            alert('File size exceeds 5MB limit. Please choose a smaller image.');
+            return false;
+        }
+    }
+});
+</script>
+
+<style>
+    /* Smooth hover effect */
+    .card {
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+{% endblock %}

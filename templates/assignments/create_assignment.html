@@ -1,0 +1,521 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Assignment{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Create Assignment</h1>
+    
+    <form id="createAssignmentForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Basic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Course *</label>
+                    <select name="course_id" class="form-control" required>
+                        <option value="">Select a course</option>
+                        {% for course in courses %}
+                            <option value="{{ course.id }}">{{ course.name }} ({{ course.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Title *</label>
+                    <input name="title" class="form-control" placeholder="e.g., Midterm Assignment" required />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="4" placeholder="Provide detailed instructions for students..."></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Due Date (Optional)</label>
+                        <input type="datetime-local" name="due_date" class="form-control" />
+                    </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Max Marks *</label>
+                        <input type="number" name="max_marks" class="form-control" value="100" min="1" required />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Assignment Materials</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Upload Files</label>
+                    <input type="file" name="assignment_files" class="form-control" multiple accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,.zip" id="fileInput" />
+                    <small class="form-text text-muted">
+                        Supported formats: PDF, Word, PowerPoint, Excel, Text, ZIP (Max 10MB per file)
+                    </small>
+                    <div id="fileList" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Import from URL</label>
+                    <div class="input-group">
+                        <input type="url" id="importUrl" class="form-control" placeholder="https://docs.google.com/document/..." />
+                        <button type="button" class="btn btn-outline-secondary" id="importUrlBtn">
+                            <i class="bi bi-download"></i> Import
+                        </button>
+                    </div>
+                    <small class="form-text text-muted">
+                        Import from Google Docs, Drive, or any public URL
+                    </small>
+                </div>
+
+                <div id="importedContent" class="alert alert-success d-none mt-3">
+                    <strong>Content imported successfully!</strong>
+                    <button type="button" class="btn-close float-end" id="clearImport"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Questions</h5>
+                <button type="button" class="btn btn-sm btn-success" id="addQuestionBtn">
+                    <i class="bi bi-plus-circle"></i> Add Question
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="questionsContainer">
+                    <p class="text-muted">No questions added yet. Click "Add Question" to create questions.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary" id="createBtn">
+                <i class="bi bi-check-circle"></i> Create Assignment
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="saveDraftBtn">
+                <i class="bi bi-save"></i> Save as Draft
+            </button>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Question Template -->
+<template id="questionTemplate">
+    <div class="question-item card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h6 class="question-number">Question 1</h6>
+                <button type="button" class="btn btn-sm btn-danger remove-question">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Question Type</label>
+                <select class="form-control question-type">
+                    <option value="mcq">Multiple Choice</option>
+                    <option value="true_false">True/False</option>
+                    <option value="short_answer">Short Answer</option>
+                    <option value="essay">Essay</option>
+                    <option value="file_upload">File Upload</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Question Text *</label>
+                <textarea class="form-control question-text" rows="2" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Points</label>
+                <input type="number" class="form-control question-points" value="10" min="0" />
+            </div>
+
+            <!-- MCQ Options (shown only for MCQ) -->
+            <div class="mcq-options">
+                <label class="form-label">Options</label>
+                <div class="options-list">
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_option_1" value="0" />
+                        </div>
+                        <input type="text" class="form-control" placeholder="Option A" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_option_1" value="1" />
+                        </div>
+                        <input type="text" class="form-control" placeholder="Option B" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_option_1" value="2" />
+                        </div>
+                        <input type="text" class="form-control" placeholder="Option C" />
+                    </div>
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_option_1" value="3" />
+                        </div>
+                        <input type="text" class="form-control" placeholder="Option D" />
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary add-option">
+                    <i class="bi bi-plus"></i> Add Option
+                </button>
+            </div>
+
+            <!-- True/False Options -->
+            <div class="true-false-options d-none">
+                <label class="form-label">Correct Answer</label>
+                <div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tf_answer_1" value="true" />
+                        <label class="form-check-label">True</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tf_answer_1" value="false" />
+                        <label class="form-check-label">False</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let questionCount = 0;
+let questions = [];
+let importedFileUrl = null;
+
+// File upload handler
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    
+    if (this.files.length > 0) {
+        fileList.innerHTML = '<strong>Selected files:</strong><ul class="mb-0">';
+        Array.from(this.files).forEach(file => {
+            const size = (file.size / 1024 / 1024).toFixed(2);
+            fileList.innerHTML += `<li>${file.name} (${size} MB)</li>`;
+        });
+        fileList.innerHTML += '</ul>';
+    }
+});
+
+// Import from URL
+document.getElementById('importUrlBtn').addEventListener('click', async function() {
+    const url = document.getElementById('importUrl').value;
+    if (!url) {
+        alert('Please enter a URL');
+        return;
+    }
+
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split"></i> Importing...';
+
+    try {
+        // Send URL to backend for processing
+        const formData = new FormData();
+        formData.append('url', url);
+        
+        const response = await fetch('{% url "import_from_url" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            importedFileUrl = data.file_url;
+            document.getElementById('importedContent').classList.remove('d-none');
+            document.getElementById('importUrl').value = '';
+        } else {
+            alert('Import failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        alert('Import failed: ' + error.message);
+    } finally {
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-download"></i> Import';
+    }
+});
+
+document.getElementById('clearImport').addEventListener('click', function() {
+    importedFileUrl = null;
+    document.getElementById('importedContent').classList.add('d-none');
+});
+
+// Add question
+document.getElementById('addQuestionBtn').addEventListener('click', function() {
+    questionCount++;
+    const template = document.getElementById('questionTemplate');
+    const clone = template.content.cloneNode(true);
+    
+    // Update question number
+    clone.querySelector('.question-number').textContent = `Question ${questionCount}`;
+    
+    // Update radio names for unique groups
+    const radioInputs = clone.querySelectorAll('input[type="radio"]');
+    radioInputs.forEach(radio => {
+        const name = radio.getAttribute('name');
+        radio.setAttribute('name', name.replace('_1', `_${questionCount}`));
+    });
+    
+    // Add event listener for question type change
+    const questionType = clone.querySelector('.question-type');
+    const mcqOptions = clone.querySelector('.mcq-options');
+    const tfOptions = clone.querySelector('.true-false-options');
+    
+    questionType.addEventListener('change', function() {
+        if (this.value === 'mcq') {
+            mcqOptions.classList.remove('d-none');
+            tfOptions.classList.add('d-none');
+        } else if (this.value === 'true_false') {
+            mcqOptions.classList.add('d-none');
+            tfOptions.classList.remove('d-none');
+        } else {
+            mcqOptions.classList.add('d-none');
+            tfOptions.classList.add('d-none');
+        }
+    });
+    
+    // Remove question
+    clone.querySelector('.remove-question').addEventListener('click', function() {
+        this.closest('.question-item').remove();
+        updateQuestionNumbers();
+    });
+    
+    // Add option button
+    clone.querySelector('.add-option').addEventListener('click', function() {
+        const optionsList = this.previousElementSibling;
+        const optionCount = optionsList.children.length;
+        const optionLetter = String.fromCharCode(65 + optionCount);
+        
+        const newOption = document.createElement('div');
+        newOption.className = 'input-group mb-2';
+        newOption.innerHTML = `
+            <div class="input-group-text">
+                <input type="radio" name="correct_option_${questionCount}" value="${optionCount}" />
+            </div>
+            <input type="text" class="form-control" placeholder="Option ${optionLetter}" />
+            <button type="button" class="btn btn-outline-danger btn-sm remove-option">
+                <i class="bi bi-x"></i>
+            </button>
+        `;
+        
+        newOption.querySelector('.remove-option').addEventListener('click', function() {
+            this.closest('.input-group').remove();
+        });
+        
+        optionsList.appendChild(newOption);
+    });
+    
+    const container = document.getElementById('questionsContainer');
+    if (container.querySelector('p.text-muted')) {
+        container.innerHTML = '';
+    }
+    container.appendChild(clone);
+});
+
+function updateQuestionNumbers() {
+    const questionItems = document.querySelectorAll('.question-item');
+    questionItems.forEach((item, index) => {
+        item.querySelector('.question-number').textContent = `Question ${index + 1}`;
+    });
+    questionCount = questionItems.length;
+}
+
+function collectQuestions() {
+    const questionItems = document.querySelectorAll('.question-item');
+    const questionsData = [];
+    
+    questionItems.forEach((item, index) => {
+        const type = item.querySelector('.question-type').value;
+        const text = item.querySelector('.question-text').value;
+        const points = item.querySelector('.question-points').value;
+        
+        const question = {
+            order: index + 1,
+            type: type,
+            text: text,
+            points: parseFloat(points) || 0
+        };
+        
+        if (type === 'mcq') {
+            const options = [];
+            const optionInputs = item.querySelectorAll('.options-list input[type="text"]');
+            const correctRadio = item.querySelector('.options-list input[type="radio"]:checked');
+            
+            optionInputs.forEach(input => {
+                if (input.value.trim()) {
+                    options.push(input.value.trim());
+                }
+            });
+            
+            question.options = options;
+            question.correct_answer = correctRadio ? parseInt(correctRadio.value) : null;
+        } else if (type === 'true_false') {
+            const tfAnswer = item.querySelector('input[name^="tf_answer_"]:checked');
+            question.correct_answer = tfAnswer ? tfAnswer.value : null;
+        }
+        
+        questionsData.push(question);
+    });
+    
+    return questionsData;
+}
+
+function getCsrfToken() {
+    const match = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+    return match ? match[2] : '';
+}
+
+// Form submission
+document.getElementById('createAssignmentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const createBtn = document.getElementById('createBtn');
+    createBtn.disabled = true;
+    createBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating...';
+    
+    const formData = new FormData(this);
+    
+    // Add questions data
+    const questionsData = collectQuestions();
+    formData.append('questions', JSON.stringify(questionsData));
+    
+    // Add imported file URL if exists
+    if (importedFileUrl) {
+        formData.append('imported_file_url', importedFileUrl);
+    }
+    
+    try {
+        const response = await fetch('{% url "create_assignment" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data && data.success) {
+            alert('Assignment created successfully!');
+            window.location.href = '/teacher/assignment/' + data.assignment_id + '/';
+        } else {
+            alert('Error: ' + (data && data.error ? data.error : response.statusText));
+            createBtn.disabled = false;
+            createBtn.innerHTML = '<i class="bi bi-check-circle"></i> Create Assignment';
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        createBtn.disabled = false;
+        createBtn.innerHTML = '<i class="bi bi-check-circle"></i> Create Assignment';
+    }
+});
+
+// Save as draft
+document.getElementById('saveDraftBtn').addEventListener('click', async function() {
+    const formData = new FormData(document.getElementById('createAssignmentForm'));
+    formData.append('is_draft', 'true');
+    
+    const questionsData = collectQuestions();
+    formData.append('questions', JSON.stringify(questionsData));
+    
+    if (importedFileUrl) {
+        formData.append('imported_file_url', importedFileUrl);
+    }
+    
+    try {
+        const response = await fetch('{% url "create_assignment" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data && data.success) {
+            alert('Draft saved successfully!');
+            window.location.href = '{% url "teacher_dashboard" %}';
+        } else {
+            alert('Error saving draft: ' + (data && data.error ? data.error : response.statusText));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+// Set minimum date to today
+const dateInput = document.querySelector('input[name="due_date"]');
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+dateInput.min = now.toISOString().slice(0, 16);
+</script>
+
+<style>
+.question-item {
+    transition: all 0.3s ease;
+}
+
+.question-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.question-number {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.card-header h5 {
+    color: #212529;
+}
+
+.options-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#fileList {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+#fileList ul {
+    padding-left: 20px;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+.btn i {
+    margin-right: 4px;
+}
+</style>
+{% endblock %}

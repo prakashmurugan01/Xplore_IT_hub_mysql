@@ -1,0 +1,2709 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/student_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="app-container container-fluid">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="d-flex align-items-center mb-4">
+      <div class="me-2 profile-pic">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      <div>
+        <div class="brand">XPLORE IT Hub</div>
+        <div class="tiny muted">Student Portal</div>
+      </div>
+    </div>
+
+    <nav class="nav flex-column mb-4">
+      <a class="nav-link active d-flex align-items-center gap-2" href="#dashboard">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+      <a class="nav-link d-flex align-items-center gap-2" href="#materials">
+        <i class="bi bi-folder2-open"></i> Materials
+      </a>
+      <a class="nav-link d-flex align-items-center gap-2" href="#timetable">
+        <i class="bi bi-calendar3"></i> Timetable
+      </a>
+      <a class="nav-link d-flex align-items-center gap-2" href="#feedback">
+        <i class="bi bi-chat-left-text"></i> Feedback
+      </a>
+      <a class="nav-link d-flex align-items-center gap-2" href="{% url 'view_profile' %}">
+        <i class="bi bi-person-circle"></i> Profile
+      </a>
+    </nav>
+
+    <hr style="opacity: 0.2;">
+
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="tiny muted">Notifications</div>
+        <button id="clear-notifs" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+      <div id="notif-list" class="small" style="max-height: 250px; overflow-y: auto;">
+        <div class="tiny muted text-center py-3">Loading...</div>
+      </div>
+    </div>
+
+    <div class="mt-auto pt-3" style="border-top: 1px solid var(--border-light);">
+      <div class="d-flex justify-content-between align-items-center">
+        <small class="muted"><i class="bi bi-moon-fill me-1"></i>Theme</small>
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle dark/light mode">
+          <span class="theme-toggle-label">
+            <span>☀️</span>
+            <span>🌙</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-3 flex-grow-1">
+        <h4 class="mb-0">Dashboard <span class="live-indicator"><span class="live-dot"></span>Live</span></h4>
+        <input class="form-control form-control-sm search-input" placeholder="Search materials, tasks, events..."
+          id="search-input" style="max-width: 400px;">
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-info btn-sm" style="border-radius: 8px;" title="One Step Guide" onclick="showOneStepGuide()">
+          <i class="bi bi-lightning-fill me-1"></i>One Step
+        </button>
+        <button class="btn btn-success btn-sm" style="border-radius: 8px;" title="Mark All as Read" onclick="markAllNotificationsRead()">
+          <i class="bi bi-check-all me-1"></i>Read
+        </button>
+        <div class="position-relative">
+          <button id="notif-btn" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">
+            <i class="bi bi-bell"></i>
+            <span id="notif-count"
+              class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1" style="display:none;">0</span>
+          </button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="text-end me-2 tiny">
+            <div><strong>{{ user.first_name }} {{ user.last_name }}</strong></div>
+            <div class="muted">{{ user_role }}</div>
+          </div>
+          <div class="profile-pic">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <section class="grid">
+      <!-- Profile Card - Enhanced -->
+      <div class="card card-custom p-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border: 2px solid var(--primary); border-radius: 12px;">
+        <div class="d-flex justify-content-between align-items-start gap-4">
+          <!-- Profile Photo Section -->
+          <div class="d-flex gap-3" style="min-width: 0; flex: 1;">
+            <div style="position: relative;">
+              {% if user.profile.profile_pic %}
+                <img src="{{ user.profile.profile_pic.url }}" 
+                     alt="Profile photo" 
+                     class="rounded-circle shadow-sm"
+                     style="width: 90px; height: 90px; object-fit: cover; border: 4px solid white; cursor: pointer; transition: transform 0.2s;"
+                     onclick="viewProfilePhoto('{{ user.profile.profile_pic.url }}')"
+                     data-bs-toggle="tooltip"
+                     title="Click to view full profile photo">
+              {% else %}
+                <div class="profile-pic rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                     style="width: 90px; height: 90px; border: 4px solid white; font-size: 36px; font-weight: bold; flex-shrink: 0;">
+                  {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                </div>
+              {% endif %}
+              <span class="badge bg-success position-absolute bottom-0 end-0" style="width: 24px; height: 24px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+                <i class="bi bi-check-circle-fill" style="font-size: 10px;"></i>
+              </span>
+            </div>
+            
+            <!-- Profile Information -->
+            <div style="flex: 1; min-width: 0;">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h5 class="mb-1 fw-bold" style="color: var(--dark);">{{ user.first_name }} {{ user.last_name }}</h5>
+                  <div class="tiny" style="color: var(--primary); font-weight: 500;">
+                    <i class="bi bi-mortarboard-fill me-1"></i>{{ user.profile.role|upper }}
+                  </div>
+                </div>
+                <span class="badge bg-success px-3 py-2" style="white-space: nowrap;">
+                  <i class="bi bi-check-circle-fill me-1"></i>Active
+                </span>
+              </div>
+              
+              <div class="mt-3">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-card-heading me-2"></i><strong>Roll Number:</strong> {{ student_roll|default:"Not Set" }}
+                    </small>
+                  </div>
+                  <div class="col-12">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-building me-2"></i><strong>Department:</strong> {{ student_dept|default:"Not Set" }}
+                    </small>
+                  </div>
+                  <div class="col-12">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-envelope-fill me-2"></i><strong>Email:</strong> {{ user.email }}
+                    </small>
+                  </div>
+                  <div class="col-12">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-telephone-fill me-2"></i><strong>Phone:</strong> 
+                      <span id="phone-number">{{ student_phone|default:"Not provided" }}</span>
+                      <button id="edit-phone" class="btn btn-sm btn-link p-0 ms-2" style="color: var(--primary); text-decoration: none;">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                    </small>
+                  </div>
+                  <div class="col-12">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-calendar-event me-2"></i><strong>Member Since:</strong> {{ user_member_since|default:"Recently Joined" }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Action Buttons -->
+              <div class="d-flex gap-2 mt-3 flex-wrap">
+                <a href="{% url 'view_profile' %}" class="btn btn-sm btn-outline-primary" style="border-radius: 6px; font-size: 0.85rem;">
+                  <i class="bi bi-person-circle me-1"></i>View Full Profile
+                </a>
+                <!-- <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-secondary" style="border-radius: 6px; font-size: 0.85rem;">
+                  <i class="bi bi-pencil-square me-1"></i>Edit
+                </a> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Card -->
+      <div class="card card-custom p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Attendance</strong>
+            <div class="tiny muted">This semester</div>
+          </div>
+          <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span id="att-live-text">Updating</span>
+          </div>
+        </div>
+        <div class="mb-3" style="height: 150px;">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+        <div class="d-flex gap-2 align-items-center mb-4">
+          <div style="flex: 1;">
+            <div class="d-flex justify-content-between tiny muted mb-1">
+              <div>Overall Attendance %</div>
+              <div id="att-perc-text">--</div>
+            </div>
+            <div class="progress" style="height: 12px; border-radius: 6px; overflow: hidden;">
+              <div id="att-progress" class="progress-bar" role="progressbar" style="width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary));"></div>
+            </div>
+          </div>
+          <div class="text-end tiny muted">
+            Classes: <strong id="att-classes">0/0</strong>
+          </div>
+        </div>
+
+        <!-- Course-wise Attendance -->
+        <div class="mb-4" style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 1rem;">
+          <div class="small fw-bold text-muted mb-3">
+            <i class="bi bi-bar-chart me-1"></i>COURSE-WISE BREAKDOWN
+          </div>
+          <div id="att-coursewise">
+            <div class="tiny text-center text-muted py-3">
+              <i class="bi bi-hourglass-split me-1"></i>Loading attendance data...
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'download_report' %}" class="btn btn-custom btn-custom-primary w-100">
+          <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download Report
+        </a>
+      </div>
+
+      <!-- Tasks Card -->
+      <div class="card card-custom p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Tasks</strong>
+            <div class="tiny muted">Pending / Completed</div>
+          </div>
+          <button id="new-task-btn" class="btn btn-custom btn-custom-secondary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Add
+          </button>
+        </div>
+        <ul id="tasks-list" class="list-group list-group-flush">
+          <li class="list-group-item bg-transparent text-center text-muted py-4">Loading tasks...</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SECONDARY ROW -->
+    <section class="d-grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+      <div class="card card-custom p-4" id="timetable">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Class Timetable</strong>
+            <div class="tiny muted">This week</div>
+          </div>
+          <div class="tiny muted">IST</div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Subject</th>
+                <th>Staff</th>
+              </tr>
+            </thead>
+            <tbody id="timetable-body">
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">Loading timetable...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Materials -->
+      <div class="card card-custom p-4" id="materials">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong><i class="bi bi-book me-2"></i>Materials</strong>
+            <div class="tiny muted">Latest uploads</div>
+          </div>
+          <a href="#" class="btn btn-custom btn-custom-secondary btn-sm">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+        <div class="mt-2 ps-3" id="materials-list">
+          <div class="tiny fw-bold mb-2">📚 Materials</div>
+          <ul class="list-unstyled small">
+            {% if latest_materials %}
+              {% for m in latest_materials %}
+              <li class="material-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong class="tiny">{{ m.title }}</strong>
+                  <div class="tiny muted">{{ m.uploaded_at|date:'M d, Y' }}</div>
+                </div>
+                <div class="d-flex gap-2">
+                  <a class="material-btn-view" href="{% url 'view_material' m.id %}" target="_blank">
+                    <i class="bi bi-eye-fill me-1"></i> View
+                  </a>
+                  <a class="material-btn-download" href="{% url 'download_material' m.id %}">
+                    <i class="bi bi-download me-1"></i> Download
+                  </a>
+                </div>
+              </li>
+              {% endfor %}
+            {% else %}
+              <li class="text-center text-muted py-3">Loading materials...</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-custom p-4">
+        <div>
+          <strong>Events</strong>
+          <div class="tiny muted">Upcoming</div>
+        </div>
+        <div id="events-list" class="mt-3">
+          <div class="text-center text-muted py-3">Loading events...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION BUTTONS ROW -->
+    <section class="d-flex gap-2 flex-wrap justify-content-center justify-content-md-end mb-4">
+      <a class="btn btn-outline-secondary" href="{% url 'submit_feedback' %}" role="button" style="border-radius: 8px;">
+        <i class="bi bi-chat-dots me-1"></i>Send Feedback
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'student_assignments' %}" role="button"
+        style="border-radius: 8px;">
+        <i class="bi bi-tasks me-1"></i>My Assignments
+      </a>
+      <a class="btn btn-custom btn-custom-primary position-relative" href="{% url 'notifications' %}" role="button"
+        style="border-radius: 8px;">
+        <i class="bi bi-bell me-1"></i>Notifications
+        {% if unread_notifications %}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          {{ unread_notifications }}
+        </span>
+        {% endif %}
+      </a>
+    </section>
+
+    <!-- FEEDBACK SECTION -->
+    <section class="card card-custom p-4 mb-4" id="feedback">
+      <div class="row">
+        <div class="col-md-6">
+          <div>
+            <strong>Course Details</strong>
+            <div class="tiny muted">Enrolled subjects</div>
+          </div>
+          <div class="table-responsive mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Credits</th>
+                  <th>Exam</th>
+                </tr>
+              </thead>
+              <tbody id="courses-tbody">
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-2">Loading courses...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div>
+            <strong>Send Feedback</strong>
+            <div class="tiny muted">We value your input</div>
+          </div>
+          <form id="feedback-form" class="mt-3">
+            <div class="mb-2">
+              <select id="fb-category" class="form-select form-select-sm">
+                <option>Academic</option>
+                <option>Technical</option>
+                <option>Infrastructure</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <textarea id="fb-message" class="form-control form-control-sm" rows="3"
+                placeholder="Your feedback..."></textarea>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-custom btn-custom-primary btn-sm">
+                <i class="bi bi-send me-1"></i>Send
+              </button>
+              <button type="reset" class="btn btn-custom btn-custom-secondary btn-sm">Clear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECENT COURSES SECTION -->
+    <section class="card card-custom p-4 mb-4 recent-courses-section">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <strong><i class="bi bi-book me-2"></i>Recent Courses</strong>
+          <div class="tiny muted">Enrolled subjects & materials</div>
+        </div>
+        <a href="#" class="btn btn-custom btn-custom-secondary btn-sm">
+          View All <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+
+      {% if enrollments %}
+      <div class="row g-3">
+        {% for e in enrollments %}
+        <div class="col-12">
+          <!-- COURSE CARD -->
+          <div class="course-card d-flex align-items-center gap-3 p-3">
+            <div class="course-icon">
+              <i class="bi bi-book"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{ e.course.name }}</h6>
+              <div class="tiny muted">
+                <i class="bi bi-person me-1"></i>{{
+                e.course.teacher.user.get_full_name|default:e.course.teacher.user.username }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-list me-1"></i>{{ e.course.lessons_count|default:'-' }} lessons
+              </div>
+              <div class="mt-2">
+                <div class="progress progress-custom">
+                  <div class="progress-bar progress-bar-custom" role="progressbar"
+                    data-progress="{{ e.progress|default:0 }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="course-progress text-end">
+              <div class="fw-bold">{{ e.progress|default:0 }}%</div>
+            </div>
+          </div>
+
+          <!-- MATERIALS -->
+          {% if e.materials %}
+          <div class="mt-2 ps-3">
+            <div class="tiny fw-bold mb-2">📚 Materials</div>
+            <ul class="list-unstyled small">
+              {% for m in e.materials %}
+              <li class="material-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong class="tiny">{{ m.title }}</strong>
+                  <div class="tiny muted">{{ m.uploaded_at|date:'M d, Y' }}</div>
+                </div>
+                <div class="d-flex gap-2">
+                  <a class="material-btn-view" href="{% url 'view_material' m.id %}" target="_blank">
+                    <i class="bi bi-eye-fill me-1"></i> View
+                  </a>
+                  <a class="material-btn-download" href="{% url 'download_material' m.id %}">
+                    <i class="bi bi-download me-1"></i> Download
+                  </a>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div style="font-size: 3rem; opacity: 0.5;">📚</div>
+        <p class="muted mt-3">You are not enrolled in any courses yet.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- STUDY TIMER SECTION -->
+    <section class="card card-custom p-4">
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-hourglass-split" style="font-size: 1.3rem; color: var(--primary);"></i>
+        <strong>Study Timer (Pomodoro)</strong>
+      </div>
+      <div class="text-center">
+        <div id="timerDisplay"
+          style="font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; font-family: 'Courier New', monospace;">25:00
+        </div>
+        <div class="d-flex gap-2 justify-content-center flex-wrap mb-3">
+          <button id="startTimer" class="btn btn-custom btn-custom-primary btn-sm">
+            <i class="bi bi-play-fill me-1"></i>Start
+          </button>
+          <button id="pauseTimer" class="btn btn-custom btn-custom-secondary btn-sm" disabled>
+            <i class="bi bi-pause-fill me-1"></i>Pause
+          </button>
+          <button id="resetTimer" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">
+            <i class="bi bi-arrow-clockwise me-1"></i>Reset
+          </button>
+        </div>
+        <div class="mt-3">
+          <select id="timerPreset" class="form-select form-select-sm">
+            <option value="1500">25 min (Pomodoro)</option>
+            <option value="3000">50 min (Extended)</option>
+            <option value="900">15 min (Short)</option>
+            <option value="300">5 min (Break)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Advanced AI Chat Widget -->
+<div id="chat" class="chat-widget" style="display: none;">
+  <div class="chat-header">
+    <div class="d-flex align-items-center gap-2">
+      <div class="chat-header-icon">
+        <span style="font-size: 24px;">🤖</span>
+      </div>
+      <div>
+        <h6 class="mb-0">✨ AI Study Assistant</h6>
+        <small class="chat-status">🟢 Ready to help</small>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="chat-menu-btn" id="chat-menu-btn" title="Menu">
+        <span style="font-size: 18px;">⚙️</span>
+      </button>
+      <button id="close-chat" class="btn btn-sm p-0"
+        style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">
+        ✕
+      </button>
+    </div>
+  </div>
+  
+  <!-- Chat Menu Dropdown -->
+  <div id="chat-menu" class="chat-menu" style="display: none;">
+    <button class="chat-menu-item" onclick="showChatOptions('courses')">
+      <span>📚</span> My Courses
+    </button>
+    <button class="chat-menu-item" onclick="showChatOptions('assignments')">
+      <span>✅</span> Assignments
+    </button>
+    <button class="chat-menu-item" onclick="showChatOptions('attendance')">
+      <span>📊</span> Attendance
+    </button>
+    <button class="chat-menu-item" onclick="showChatOptions('contact')">
+      <span>💬</span> Contact
+    </button>
+    <button class="chat-menu-item" onclick="showChatOptions('help')">
+      <span>❓</span> Help
+    </button>
+  </div>
+
+  <div id="chat-body" class="chat-body">
+    <div class="chat-bubble from-them">
+      <small>👋 Hello! I'm your AI Study Assistant. How can I help you today?</small>
+    </div>
+  </div>
+  
+  <!-- Quick Suggestion Buttons -->
+  <div id="chat-suggestions" class="chat-suggestions">
+    <button class="chat-suggestion-btn" onclick="sendChatMessage('My courses')">📚 My Courses</button>
+    <button class="chat-suggestion-btn" onclick="sendChatMessage('assignments')">✅ Assignments</button>
+    <button class="chat-suggestion-btn" onclick="sendChatMessage('attendance')">📊 Attendance</button>
+    <button class="chat-suggestion-btn" onclick="sendChatMessage('help')">❓ Help</button>
+  </div>
+  
+  <div class="chat-input-group">
+    <input id="chat-input" class="form-control form-control-sm chat-input-field" placeholder="Ask anything..."
+      style="border-radius: 6px;">
+    <button id="chat-send" class="btn btn-custom btn-custom-primary btn-sm chat-send-btn" title="Send message">
+      <span style="font-size: 16px;">📤</span>
+    </button>
+  </div>
+</div>
+
+<!-- Floating Chat Button with Animation -->
+<button id="open-chat-btn" class="btn btn-custom btn-custom-primary shadow-lg chat-float-btn"
+  style="position: fixed; right: 20px; bottom: 20px; z-index: 1100; border-radius: 50%; width: 56px; height: 56px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+  💬✨
+  <span class="chat-pulse"></span>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // API Configuration
+  const API_ENDPOINTS = {
+    tasks: '/api/student/tasks/',
+    attendance: '/api/attendance/realtime/',
+    materials: '/api/student/materials/',
+    timetable: '/api/student/timetable/',
+    events: '/api/student/events/',
+    schedules: '/api/student/schedules/',
+    notifications: '/api/student/notifications/',
+    courses: '/api/student/courses/'
+  };
+
+  // Global variables for data management
+  let tasksData = [];
+  let attendanceData = {};
+  let materialsData = [];
+  let timetableData = [];
+  let eventsData = [];
+  let eventsPollInterval = null;
+  let lastEventsSnapshot = [];
+  let notificationsData = [];
+  let coursesData = [];
+  let attendanceChart = null;
+  let attendancePollInterval = null;
+  let timerInterval = null;
+  let timeRemaining = 1500;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
+    loadAllData();
+    setupChatWidget();
+    setupEventHandlers();
+  });
+
+  // Unified data loading function
+  async function loadAllData() {
+    try {
+      console.log('Starting to load all dashboard data...');
+      const results = await Promise.allSettled([
+        fetchTasks(),
+        fetchAttendance(),
+        fetchMaterials(),
+        fetchTimetable(),
+        fetchEvents(),
+        fetchCourses(),
+        fetchNotifications()
+      ]);
+      
+      // Log results for debugging
+      results.forEach((result, index) => {
+        const names = ['Tasks', 'Attendance', 'Materials', 'Timetable', 'Events', 'Courses', 'Notifications'];
+        if (result.status === 'fulfilled') {
+          console.log(`✓ ${names[index]} loaded successfully`);
+        } else {
+          console.error(`✗ ${names[index]} failed:`, result.reason);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  }
+
+  // Fetch Tasks from Backend
+  async function fetchTasks() {
+    try {
+      const response = await fetch(API_ENDPOINTS.tasks);
+      if (!response.ok) {
+        console.warn('Tasks API returned', response.status);
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Tasks fetched successfully:', data);
+      tasksData = data.tasks || data;
+      renderTasks();
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      tasksData = [];
+      renderTasks();
+    }
+  }
+
+  // Fetch Attendance from Backend
+  async function fetchAttendance() {
+    try {
+      const studentId = '{{ user.id }}';
+      const response = await fetch(`${API_ENDPOINTS.attendance}?student_id=${studentId}`);
+      if (!response.ok) throw new Error('Failed to fetch attendance');
+      attendanceData = await response.json();
+      console.log('Attendance data fetched:', attendanceData);
+      initAttendanceChart();
+      updateAttendanceDisplay();
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+  }
+
+  // Fetch Materials from Backend
+  async function fetchMaterials() {
+    try {
+      const response = await fetch(API_ENDPOINTS.materials);
+      if (!response.ok) {
+        console.warn('Materials API returned', response.status);
+        return;
+      }
+      materialsData = await response.json();
+      console.log('Materials fetched:', materialsData);
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+      materialsData = [];
+    }
+  }
+
+  // Fetch Timetable from Backend
+  async function fetchTimetable() {
+    try {
+      const response = await fetch(API_ENDPOINTS.timetable);
+      if (!response.ok) {
+        console.warn('Timetable API returned', response.status);
+        timetableData = [];
+        return;
+      }
+      const data = await response.json();
+      timetableData = data.timetable || data;
+      renderTimetable();
+    } catch (error) {
+      console.error('Error fetching timetable:', error);
+      timetableData = [];
+      renderTimetable();
+    }
+  }
+
+  // Fetch Events from Backend
+  async function fetchEvents() {
+    try {
+      const response = await fetch(API_ENDPOINTS.events);
+      if (!response.ok) {
+        console.warn('Events API returned', response.status, '- using fallback to schedules only');
+        eventsData = [];
+      } else {
+        const data = await response.json();
+        // API may return either { events: [...] } or a plain array — normalize both
+        eventsData = data.events || data || [];
+        if (!Array.isArray(eventsData)) eventsData = [];
+        console.log('Events fetched:', eventsData.length);
+      }
+      
+      // Keep only upcoming events (date >= today) and sort ascending
+      try {
+        const today = new Date();
+        eventsData = eventsData.filter(ev => {
+          if (!ev || !ev.date) return false;
+          const d = new Date(ev.date);
+          // accept same-day events too
+          return !isNaN(d) && (d.setHours(0,0,0,0) >= new Date(today).setHours(0,0,0,0));
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+      } catch (e) {
+        // if parsing fails, keep original order
+        console.warn('Error normalizing events dates', e);
+      }
+
+      // detect newly added events compared to previous snapshot
+      try {
+        const previous = Array.isArray(lastEventsSnapshot) ? lastEventsSnapshot : [];
+        const newOnes = eventsData.filter(ev => {
+          return !previous.some(p => (p.title === ev.title && p.date === ev.date && (p.venue || '') === (ev.venue || '')));
+        });
+        // if there are new events and this is not the first load, notify the user
+        if (newOnes.length > 0 && previous.length > 0) {
+          console.log('New events detected:', newOnes.length);
+          notifyNewEvents(newOnes);
+        }
+        // keep a shallow snapshot of recent events to compare next poll
+        lastEventsSnapshot = eventsData.slice(0, 20);
+      } catch (e) {
+        console.warn('Event diffing failed', e);
+      }
+
+      renderEvents();
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      eventsData = [];
+      renderEvents();
+    }
+  }
+
+  // Convert schedule object to event-like object for display
+  function scheduleToEvent(sched) {
+    return {
+      id: sched.id,
+      title: sched.title,
+      date: sched.date,
+      time: sched.start_time,
+      venue: sched.location || 'TBD',
+      description: sched.description,
+      type: 'schedule',
+      course: sched.course,
+      color: sched.color
+    };
+  }
+
+  // Fetch Schedules from Backend and merge into events display
+  async function fetchSchedules() {
+    try {
+      const response = await fetch(API_ENDPOINTS.schedules);
+      if (!response.ok) {
+        console.warn('Schedules API returned', response.status);
+        return;
+      }
+      const data = await response.json();
+      const schedules = data.schedules || [];
+      console.log('Schedules fetched:', schedules.length);
+      
+      // Convert schedules to event format and merge
+      const scheduleEvents = schedules.map(s => scheduleToEvent(s));
+      
+      // Detect newly added schedules compared to previous snapshot
+      try {
+        const previous = Array.isArray(lastEventsSnapshot) ? lastEventsSnapshot : [];
+        const newSchedules = scheduleEvents.filter(ev => {
+          return !previous.some(p => (p.title === ev.title && p.date === ev.date && (p.venue || '') === (ev.venue || '')));
+        });
+        
+        // Notify about new schedules
+        if (newSchedules.length > 0 && previous.length > 0) {
+          console.log('New schedules detected:', newSchedules.length);
+          notifyNewEvents(newSchedules);
+        }
+      } catch (e) {
+        console.warn('Schedule diffing failed', e);
+      }
+      
+      // Merge schedules with existing events and sort by date
+      try {
+        const today = new Date();
+        const allEvents = [...eventsData, ...scheduleEvents];
+        
+        // Remove duplicates based on title+date+venue
+        const uniqueEvents = [];
+        const seen = new Set();
+        allEvents.forEach(ev => {
+          const key = `${ev.title}|${ev.date}|${ev.venue || 'TBD'}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueEvents.push(ev);
+          }
+        });
+        
+        // Filter and sort
+        eventsData = uniqueEvents
+          .filter(ev => {
+            if (!ev || !ev.date) return false;
+            const d = new Date(ev.date);
+            return !isNaN(d) && (d.setHours(0,0,0,0) >= new Date(today).setHours(0,0,0,0));
+          })
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        console.log('Total events after merge:', eventsData.length);
+      } catch (e) {
+        console.error('Error merging schedules with events', e);
+      }
+      
+      renderEvents();
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+    }
+  }
+
+  function notifyNewEvents(newEvents) {
+    console.log('Notifying about', newEvents.length, 'new events');
+    // in-page compact notification
+    newEvents.slice(0,3).forEach(ev => {
+      const msg = `${ev.title} — ${ev.date}${ev.venue ? ' @ ' + ev.venue : ''}`;
+      console.log('Event detected:', msg);
+    });
+  }
+
+  // Fetch Events from Backend
+
+  // Fetch Notifications from Backend
+  async function fetchNotifications() {
+    try {
+      const response = await fetch(API_ENDPOINTS.notifications);
+      if (!response.ok) {
+        console.warn('Notifications API returned', response.status);
+        return;
+      }
+      const data = await response.json();
+      console.log('Notifications fetched:', data);
+      
+      const notifList = document.getElementById('notif-list');
+      if (!notifList) return;
+      
+      const notifications = data.notifications || [];
+      const unreadCount = data.unread_count || 0;
+      
+      if (notifications.length === 0) {
+        notifList.innerHTML = '<div class="tiny muted text-center py-3">No notifications</div>';
+      } else {
+        notifList.innerHTML = notifications.map(n => `
+          <div class="mb-2 pb-2" style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+            <small class="fw-bold">${escapeHtml(n.title)}</small>
+            <div class="tiny muted">${escapeHtml(n.message)}</div>
+            <div class="tiny text-muted">${n.created_at}</div>
+          </div>
+        `).join('');
+      }
+      
+      // Update notification count badge
+      const notifCount = document.getElementById('notif-count');
+      if (notifCount && unreadCount > 0) {
+        notifCount.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        notifCount.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      const notifList = document.getElementById('notif-list');
+      if (notifList) {
+        notifList.innerHTML = '<div class="tiny muted text-center py-3">Unable to load notifications</div>';
+      }
+    }
+  }
+  // Fetch Courses
+  async function fetchCourses() {
+    try {
+      const response = await fetch(API_ENDPOINTS.courses);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('Courses fetched successfully:', data);
+      
+      // Handle both {courses: [...]} and direct array format
+      coursesData = data.courses || data;
+      renderCourses();
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      // Show error message in table if fetch fails
+      const tbody = document.getElementById('courses-tbody');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-2">Error loading courses</td></tr>';
+      }
+    }
+  }
+
+  function renderTasks() {
+    const ul = document.getElementById('tasks-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    if (!tasksData || tasksData.length === 0) {
+      ul.innerHTML = '<li class="list-group-item bg-transparent text-center text-muted py-4">No tasks yet</li>';
+      return;
+    }
+    tasksData.forEach(t => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item bg-transparent d-flex justify-content-between align-items-center';
+      const dueDate = t.due_date || t.due || 'N/A';
+      const course = t.course || 'Assignment';
+      li.innerHTML = `
+        <div style="flex: 1;">
+          <div><strong>${escapeHtml(t.title)}</strong></div>
+          <div class="tiny muted">${escapeHtml(course)} • Due: ${escapeHtml(dueDate)}</div>
+        </div>
+        <div class="text-end">
+          <span class="status-badge ${t.status === 'completed' ? 'status-success' : t.status === 'overdue' ? 'status-danger' : t.priority === 'high' ? 'status-pending' : 'status-warning'}">
+            ${escapeHtml(t.status)}
+          </span>
+          <div class="mt-2">
+            <button class="btn btn-sm btn-primary me-1" onclick="openTaskDetails(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}', '${escapeHtml(course).replace(/'/g, "\\'")}', '${escapeHtml(dueDate).replace(/'/g, "\\'")}', '${t.status}', '${t.priority}')" style="border-radius: 6px;">
+              <i class="bi bi-eye me-1"></i>Open
+            </button>
+            <button class="btn btn-sm btn-outline-secondary me-1" onclick="toggleTask(${t.id})" style="border-radius: 6px;">
+              ${t.status === 'completed' ? '🔄 Reopen' : '✓ Done'}
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTask(${t.id})" style="border-radius: 6px;">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      ul.appendChild(li);
+    });
+  }
+
+  function renderTimetable() {
+    const tbody = document.getElementById('timetable-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!timetableData || timetableData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No classes scheduled</td></tr>';
+      return;
+    }
+    timetableData.forEach(entry => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${escapeHtml(entry.day)}</td>
+        <td class="tiny">${escapeHtml(entry.time)}</td>
+        <td>${escapeHtml(entry.subject)}</td>
+        <td class="tiny">${escapeHtml(entry.instructor)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function renderEvents() {
+    const eventsList = document.getElementById('events-list');
+    if (!eventsList) return;
+    eventsList.innerHTML = '';
+    if (!eventsData || eventsData.length === 0) {
+      eventsList.innerHTML = '<p class="text-muted text-center">No upcoming events</p>';
+      return;
+    }
+    console.debug('Rendering', eventsData.length, 'events');
+    eventsData.forEach((event, idx) => {
+      const div = document.createElement('div');
+      if (idx > 0) div.style.borderTop = '1px solid var(--border-light)';
+      div.className = 'mb-3 pb-3';
+
+      // Format date/time for friendly display
+      let dateDisplay = '';
+      try {
+        if (event.date) {
+          const d = new Date(event.date);
+          if (!isNaN(d)) {
+            dateDisplay = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            // if time part provided in ISO, show time as well
+            if (event.time) {
+              const t = new Date(event.time);
+              if (!isNaN(t)) dateDisplay += ' · ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (event.date && event.date.includes('T')) {
+              // ISO datetime contained in date field
+              const dt = new Date(event.date);
+              if (!isNaN(dt)) dateDisplay += ' · ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+          } else {
+            dateDisplay = event.date;
+          }
+        }
+      } catch (e) {
+        console.warn('date formatting error', e, event.date);
+        dateDisplay = event.date || '';
+      }
+
+      const venue = event.venue ? escapeHtml(event.venue) : 'TBD';
+      div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong class="tiny">${escapeHtml(event.title)}</strong>
+            <div class="tiny muted">${venue}</div>
+          </div>
+          <span class="badge-custom">${escapeHtml(dateDisplay)}</span>
+        </div>
+      `;
+      eventsList.appendChild(div);
+    });
+  }
+
+  function renderCourses() {
+    const tbody = document.getElementById('courses-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    // Handle array of courses or object with results property
+    let courses = coursesData;
+    if (coursesData && typeof coursesData === 'object' && !Array.isArray(coursesData) && coursesData.results) {
+      courses = coursesData.results;
+    }
+    
+    if (!courses || courses.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-2">No courses enrolled</td></tr>';
+      return;
+    }
+    
+    courses.forEach(course => {
+      const row = document.createElement('tr');
+      // Handle different property names (course_name vs name, credit vs credits)
+      const courseName = course.course_name || course.name || 'Unnamed Course';
+      const courseCredits = course.credit || course.credits || '-';
+      const examDate = course.exam_date || course.exam_schedule || 'TBD';
+      
+      row.innerHTML = `
+        <td>${escapeHtml(courseName)}</td>
+        <td>${escapeHtml(courseCredits)}</td>
+        <td class="tiny">${escapeHtml(examDate)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  // Task Management Functions
+  async function toggleTask(id) {
+    try {
+      const response = await fetch(`/api/student/tasks/${id}/toggle/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+      });
+      if (response.ok) {
+        // Notification system disabled
+        fetchTasks();
+      }
+    } catch (error) {
+      console.error('Error toggling task:', error);
+    }
+  }
+
+  async function deleteTask(id) {
+    if (!confirm('Delete this task?')) return;
+    try {
+      const response = await fetch(`/api/student/tasks/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+      });
+      if (response.ok) {
+        // Notification system disabled
+        fetchTasks();
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  }
+
+  function initAttendanceChart() {
+    const ctx = document.getElementById('attendanceChart');
+    if (!ctx) return;
+    
+    const historyData = attendanceData.historyPercents || [78, 85, 80, 88, 82];
+    if (attendanceChart) attendanceChart.destroy();
+    attendanceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['W1', 'W2', 'W3', 'W4', 'W5'],
+        datasets: [{
+          label: 'Attendance %',
+          data: historyData,
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderColor: 'rgba(102, 126, 234, 1)',
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { min: 50, max: 100, ticks: { callback: v => v + '%' } } }
+      }
+    });
+  }
+
+  function updateAttendanceDisplay() {
+    if (attendanceData.percent !== undefined) {
+      const percEl = document.getElementById('att-perc-text');
+      const progressEl = document.getElementById('att-progress');
+      if (percEl) percEl.textContent = attendanceData.percent + '%';
+      if (progressEl) progressEl.style.width = attendanceData.percent + '%';
+    }
+    if (attendanceData.present !== undefined && attendanceData.total !== undefined) {
+      const classesEl = document.getElementById('att-classes');
+      if (classesEl) classesEl.textContent = `${attendanceData.present}/${attendanceData.total}`;
+    }
+  }
+
+  function initializeTheme() {
+    const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+    setTheme(savedTheme);
+  }
+
+  function setTheme(theme) {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+    localStorage.setItem('dashboard-theme', theme);
+  }
+
+  function setupEventHandlers() {
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+    }
+
+    // New task button
+    const newTaskBtn = document.getElementById('new-task-btn');
+    if (newTaskBtn) {
+      newTaskBtn.addEventListener('click', async () => {
+        const title = prompt('Task title:');
+        if (!title) return;
+        const dueDate = prompt('Due date (YYYY-MM-DD):', '2025-12-05');
+        try {
+          const response = await fetch(API_ENDPOINTS.tasks, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ title, due_date: dueDate, priority: 'medium' })
+          });
+          if (response.ok) {
+            // Notification system disabled
+            fetchTasks();
+          }
+        } catch (error) {
+          console.error('Error creating task:', error);
+        }
+      });
+    }
+
+    // Feedback form
+    const feedbackForm = document.getElementById('feedback-form');
+    if (feedbackForm) {
+      feedbackForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const category = document.getElementById('fb-category').value;
+        const message = document.getElementById('fb-message').value.trim();
+        if (!message) { alert('Please enter your feedback'); return; }
+        try {
+          const response = await fetch('/feedback/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ category, message })
+          });
+          if (response.ok) {
+            // Notification system disabled
+            // Added feedback confirmation
+            feedbackForm.reset();
+            alert('Thank you for your feedback! 🙏');
+          }
+        } catch (error) {
+          console.error('Error submitting feedback:', error);
+        }
+      });
+    }
+
+    // Phone editing
+    const editPhoneBtn = document.getElementById('edit-phone');
+    if (editPhoneBtn) {
+      editPhoneBtn.addEventListener('click', () => {
+        const current = document.getElementById('phone-number').textContent;
+        const newPhone = prompt('Update phone number:', current);
+        if (newPhone !== null && newPhone.trim()) {
+          document.getElementById('phone-number').textContent = newPhone.trim();
+          // Notification system disabled
+          // Phone updated
+        }
+      });
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        console.log('Searching for:', query);
+      });
+    }
+
+    // Clear notifications
+    const clearNotifBtn = document.getElementById('clear-notifs');
+    if (clearNotifBtn) {
+      clearNotifBtn.addEventListener('click', () => {
+        const notifList = document.getElementById('notif-list');
+        if (notifList) {
+          notifList.innerHTML = '<div class="tiny muted text-center py-3">No notifications</div>';
+        }
+      });
+    }
+
+    // Timer controls
+    setupTimerControls();
+
+    // Initialize progress bars
+    document.querySelectorAll('.progress-bar[data-progress]').forEach(el => {
+      try {
+        const v = parseInt(el.getAttribute('data-progress')) || 0;
+        el.style.width = v + '%';
+        el.setAttribute('aria-valuenow', v);
+      } catch (e) { console.error('init progress error', e); }
+    });
+  }
+
+  function setupTimerControls() {
+    const startBtn = document.getElementById('startTimer');
+    const pauseBtn = document.getElementById('pauseTimer');
+    const resetBtn = document.getElementById('resetTimer');
+    const presetSelect = document.getElementById('timerPreset');
+
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        if (timerInterval) return;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        timerInterval = setInterval(() => {
+          if (timeRemaining > 0) {
+            timeRemaining--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            // Notification system disabled
+            // Study session logged
+          }
+        }, 1000);
+      });
+    }
+
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', () => {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timeRemaining = parseInt(presetSelect.value);
+        updateTimerDisplay();
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      });
+    }
+
+    if (presetSelect) {
+      presetSelect.addEventListener('change', (e) => {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timeRemaining = parseInt(e.target.value);
+        updateTimerDisplay();
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      });
+    }
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  function updateTimerDisplay() {
+    const displayEl = document.getElementById('timerDisplay');
+    if (displayEl) displayEl.textContent = formatTime(timeRemaining);
+  }
+
+  function setupChatWidget() {
+    const chat = document.getElementById('chat');
+    const openBtn = document.getElementById('open-chat-btn');
+    const closeBtn = document.getElementById('close-chat');
+    const sendBtn = document.getElementById('chat-send');
+    const input = document.getElementById('chat-input');
+    const menuBtn = document.getElementById('chat-menu-btn');
+    const chatMenu = document.getElementById('chat-menu');
+
+    // Open/close chat
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
+        if (chat.style.display === 'flex' && input) { 
+          input.focus();
+          // Animate float button
+          openBtn.style.transform = 'scale(0.9)';
+          setTimeout(() => openBtn.style.transform = 'scale(1)', 200);
+        }
+      });
+    }
+
+    // Close button
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => { chat.style.display = 'none'; });
+    }
+
+    // Send message
+    if (sendBtn) {
+      sendBtn.addEventListener('click', sendChatMessage);
+    }
+
+    // Input field events
+    if (input) {
+      input.addEventListener('keydown', (e) => { 
+        if (e.key === 'Enter') {
+          sendChatMessage();
+        }
+      });
+      input.addEventListener('focus', () => {
+        input.parentElement.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+      });
+      input.addEventListener('blur', () => {
+        input.parentElement.style.boxShadow = 'none';
+      });
+    }
+
+    // Chat menu
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        chatMenu.style.display = chatMenu.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#chat-menu') && !e.target.closest('#chat-menu-btn')) {
+        chatMenu.style.display = 'none';
+      }
+    });
+
+    // Keyboard shortcut Cmd+K or Ctrl+K to open chat
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
+        if (chat.style.display === 'flex') input.focus();
+      }
+    });
+  }
+
+  async function sendChatMessage(predefinedMessage = null) {
+    const input = document.getElementById('chat-input');
+    const body = document.getElementById('chat-body');
+    const suggestions = document.getElementById('chat-suggestions');
+    
+    if (!input || !body) return;
+    
+    const message = predefinedMessage || input.value.trim();
+    if (!message) return;
+    
+    // Hide suggestions after first message
+    if (suggestions) suggestions.style.display = 'none';
+    
+    // Add user message bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble from-me';
+    userBubble.innerHTML = `
+      <div class="chat-bubble-content">${escapeHtml(message)}</div>
+      <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+    `;
+    body.appendChild(userBubble);
+    body.scrollTop = body.scrollHeight;
+    
+    // Show typing indicator
+    const typingBubble = document.createElement('div');
+    typingBubble.className = 'chat-bubble from-them typing-indicator';
+    typingBubble.innerHTML = `
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    `;
+    body.appendChild(typingBubble);
+    body.scrollTop = body.scrollHeight;
+    
+    input.value = '';
+    input.style.height = 'auto';
+    
+    // Send to server
+    try {
+      const response = await fetch('/api/chatbot/message/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ message: message })
+      });
+      
+      if (!response.ok) throw new Error('Failed to send message');
+      
+      const data = await response.json();
+      
+      // Remove typing indicator
+      if (typingBubble.parentElement) {
+        body.removeChild(typingBubble);
+      }
+      
+      // Add AI response
+      const responseText = data.response.message || '🤔 I didn\'t understand that.';
+      const responseType = data.response.type || 'default';
+      
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'chat-bubble from-them';
+      aiBubble.innerHTML = `
+        <div class="chat-bubble-content">${responseText}</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(aiBubble);
+      
+      // Add suggestion buttons if available
+      if (data.response.suggestions && data.response.suggestions.length > 0) {
+        const suggestionsDiv = document.createElement('div');
+        suggestionsDiv.className = 'chat-suggestions mt-2';
+        suggestionsDiv.innerHTML = data.response.suggestions.map(s => 
+          `<button class="chat-suggestion-btn" onclick="sendChatMessage('${s}')">${s}</button>`
+        ).join('');
+        body.appendChild(suggestionsDiv);
+      }
+      
+      body.scrollTop = body.scrollHeight;
+      
+      // Log response type for debugging
+      console.log('Chat response type:', responseType, data.response);
+      
+    } catch (error) {
+      console.error('Chat error:', error);
+      
+      // Remove typing indicator
+      if (typingBubble.parentElement) {
+        body.removeChild(typingBubble);
+      }
+      
+      // Show error message
+      const errorBubble = document.createElement('div');
+      errorBubble.className = 'chat-bubble from-them error';
+      errorBubble.innerHTML = `
+        <div class="chat-bubble-content">❌ Sorry, I encountered an error. Please try again.</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(errorBubble);
+      body.scrollTop = body.scrollHeight;
+    }
+  }
+
+  function showChatOptions(option) {
+    const messages = {
+      'courses': 'Tell me about my courses',
+      'assignments': 'What are my pending assignments',
+      'attendance': 'Show my attendance',
+      'contact': 'I want to contact a teacher',
+      'help': 'Help'
+    };
+    
+    if (messages[option]) {
+      sendChatMessage(messages[option]);
+    }
+  }
+
+  // Send message to specific teacher with real-time notification
+  async function sendMessageToTeacher(teacherName, message) {
+    const body = document.getElementById('chat-body');
+    if (!body) return;
+    
+    try {
+      const response = await fetch('/api/chatbot/send-to-teacher/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          teacher_name: teacherName,
+          message: message
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to send message');
+      
+      const data = await response.json();
+      
+      // Add success message bubble
+      const successBubble = document.createElement('div');
+      successBubble.className = 'chat-bubble from-them';
+      successBubble.innerHTML = `
+        <div class="chat-bubble-content">✅ ${data.message}</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(successBubble);
+      body.scrollTop = body.scrollHeight;
+      
+      console.log('Message sent to teacher:', data);
+    } catch (error) {
+      console.error('Error sending message to teacher:', error);
+      const errorBubble = document.createElement('div');
+      errorBubble.className = 'chat-bubble from-them error';
+      errorBubble.innerHTML = `
+        <div class="chat-bubble-content">❌ Failed to send message. Please try again.</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(errorBubble);
+      body.scrollTop = body.scrollHeight;
+    }
+  }
+  
+  // Send message to admin with category
+  async function sendMessageToAdmin(message, category = 'general') {
+    const body = document.getElementById('chat-body');
+    if (!body) return;
+    
+    try {
+      const response = await fetch('/api/chatbot/send-to-admin/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          message: message,
+          category: category
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to send message');
+      
+      const data = await response.json();
+      
+      // Add success message bubble with category emoji
+      const successBubble = document.createElement('div');
+      successBubble.className = 'chat-bubble from-them';
+      successBubble.innerHTML = `
+        <div class="chat-bubble-content">${data.message}</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(successBubble);
+      body.scrollTop = body.scrollHeight;
+      
+      console.log('Message sent to admins:', data);
+    } catch (error) {
+      console.error('Error sending message to admin:', error);
+      const errorBubble = document.createElement('div');
+      errorBubble.className = 'chat-bubble from-them error';
+      errorBubble.innerHTML = `
+        <div class="chat-bubble-content">❌ Failed to send message. Please try again.</div>
+        <small class="chat-timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+      `;
+      body.appendChild(errorBubble);
+      body.scrollTop = body.scrollHeight;
+    }
+  }
+
+  // Real-time attendance polling
+  function startAttendancePolling() {
+    console.log('Starting attendance polling...');
+    fetchAttendanceData();
+    attendancePollInterval = setInterval(fetchAttendanceData, 30000);
+  }
+
+  function fetchAttendanceData() {
+    fetch('{% url "api_student_attendance" %}')
+      .then(response => {
+        console.log('Attendance response status:', response.status);
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        console.log('Attendance data received:', data);
+        attendanceData = data;
+        updateAttendanceDisplay();
+        const now = new Date();
+        const liveText = document.getElementById('att-live-text');
+        if (liveText) liveText.textContent = 'Updated ' + now.toLocaleTimeString();
+      })
+      .catch(err => {
+        console.error('Attendance fetch error:', err);
+        const liveText = document.getElementById('att-live-text');
+        if (liveText) liveText.textContent = 'Update failed';
+      });
+  }
+
+  function updateAttendanceDisplay() {
+    if (!attendanceData || !attendanceData.overall) return;
+
+    const overall = attendanceData.overall;
+    const percentage = overall.percentage || 0;
+
+    // Update overall percentage
+    const attPercText = document.getElementById('att-perc-text');
+    if (attPercText) attPercText.textContent = percentage.toFixed(1) + '%';
+
+    // Update classes count
+    const attClasses = document.getElementById('att-classes');
+    if (attClasses) attClasses.textContent = `${overall.present}/${overall.total}`;
+
+    // Update progress bar
+    const attProgress = document.getElementById('att-progress');
+    if (attProgress) {
+      attProgress.style.width = percentage + '%';
+      attProgress.setAttribute('aria-valuenow', percentage);
+      // Color code based on percentage
+      if (percentage >= 75) {
+        attProgress.style.background = 'linear-gradient(90deg, #28a745, #20c997)';
+      } else if (percentage >= 60) {
+        attProgress.style.background = 'linear-gradient(90deg, #ffc107, #ff9800)';
+      } else {
+        attProgress.style.background = 'linear-gradient(90deg, #dc3545, #fd7e14)';
+      }
+    }
+
+    // Update chart and render course-wise attendance
+    if (attendanceData.courses && attendanceData.courses.length > 0) {
+      updateAttendanceChart(attendanceData.courses);
+      renderCourseWiseAttendance(attendanceData.courses);
+    } else {
+      // Show empty state if no courses
+      const courseWiseContainer = document.getElementById('att-coursewise');
+      if (courseWiseContainer) {
+        courseWiseContainer.innerHTML = '<div class="tiny text-center text-muted py-3"><i class="bi bi-inbox me-1"></i>No attendance records yet</div>';
+      }
+    }
+  }
+
+  function updateAttendanceChart(courses) {
+    const canvas = document.getElementById('attendanceChart');
+    if (!canvas) return;
+
+    // Add defensive checks for course data
+    const labels = courses.map(c => {
+      if (!c.course_code) return 'Course';
+      return c.course_code.substring(0, 8);
+    });
+    const percentages = courses.map(c => c.percentage || 0);
+
+    if (window.attendanceChartInstance) {
+      window.attendanceChartInstance.data.labels = labels;
+      window.attendanceChartInstance.data.datasets[0].data = percentages;
+      window.attendanceChartInstance.update();
+    } else {
+      const ctx = canvas.getContext('2d');
+      window.attendanceChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Attendance %',
+            data: percentages,
+            borderColor: 'var(--primary)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: 'var(--primary)',
+            pointBorderColor: 'white',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              padding: 10,
+              cornerRadius: 6
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { drawBorder: false }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  function renderCourseWiseAttendance(courses) {
+    const container = document.getElementById('att-coursewise');
+    if (!container) {
+      console.warn('att-coursewise container not found');
+      return;
+    }
+    
+    if (!courses || courses.length === 0) {
+      console.log('No courses data available for attendance rendering');
+      container.innerHTML = '<div class="tiny text-center text-muted py-3"><i class="bi bi-inbox me-1"></i>No course records available</div>';
+      return;
+    }
+
+    console.log('Rendering course-wise attendance for', courses.length, 'courses:', courses);
+
+    const html = courses.map(course => {
+      if (!course) return '';
+      const percentage = course.percentage || 0;
+      const present = course.present || 0;
+      const total = course.total || 0;
+      const courseCode = course.course_code || course.course_name || 'Unknown Course';
+      
+      let badgeColor = 'success';
+      if (percentage < 75) badgeColor = percentage < 60 ? 'danger' : 'warning';
+
+      return `
+        <div class="small mb-3 pb-2" style="border-bottom: 1px solid rgba(0,0,0,0.08);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-500" style="color: var(--dark);">
+              <i class="bi bi-mortarboard me-1"></i>${courseCode}
+            </span>
+            <span class="badge bg-${badgeColor}">${percentage.toFixed(1)}%</span>
+          </div>
+          <div class="progress" style="height: 6px; border-radius: 3px;">
+            <div class="progress-bar bg-${badgeColor}" role="progressbar" style="width: ${percentage}%;"></div>
+          </div>
+          <div style="font-size: 0.75rem; color: #999; margin-top: 0.3rem;">
+            ${present}/${total} classes attended
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (!html) {
+      container.innerHTML = '<div class="tiny text-center text-muted py-3"><i class="bi bi-inbox me-1"></i>Unable to display attendance data</div>';
+    } else {
+      container.innerHTML = html;
+    }
+  }
+
+  function pollAttendance() {
+    const studentId = '{{ user.id }}';
+    const url = `${API_ENDPOINTS.attendance}?student_id=${studentId}`;
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(payload => {
+        attendanceData = payload;
+        updateAttendanceDisplay();
+        const now = new Date();
+        const liveText = document.getElementById('att-live-text');
+        if (liveText) liveText.textContent = 'Updated ' + now.toLocaleTimeString();
+      })
+      .catch(err => {
+        console.error('Attendance poll error:', err);
+        const liveText = document.getElementById('att-live-text');
+        if (liveText) liveText.textContent = 'Update failed';
+      });
+  }
+
+  // Utility function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Utility function to escape HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Start polling after initial load
+  setTimeout(() => {
+    console.log('Starting polling system...');
+    startAttendancePolling();
+    
+    // Immediate fetch of events AND schedules
+    fetchEvents();
+    fetchSchedules();
+    
+    // Poll events + schedules very frequently (10-15s) for real-time feel
+    if (eventsPollInterval) clearInterval(eventsPollInterval);
+    eventsPollInterval = setInterval(() => {
+      console.log('Polling events and schedules...');
+      fetchEvents();
+      fetchSchedules();
+    }, 15000);
+    
+    // Reload other data every 5 minutes
+    setInterval(() => {
+      console.log('5-min data refresh...');
+      fetchTasks();
+      fetchMaterials();
+      fetchCourses();
+      fetchNotifications();
+    }, 300000);
+  }, 1000);
+  
+  console.log('Dashboard initialized. Events will auto-refresh every 15 seconds.');
+  
+  // API Health Check - logs all endpoints
+  console.log('=== API Endpoints Configuration ===');
+  console.log('Tasks:', API_ENDPOINTS.tasks);
+  console.log('Attendance:', API_ENDPOINTS.attendance);
+  console.log('Materials:', API_ENDPOINTS.materials);
+  console.log('Timetable:', API_ENDPOINTS.timetable);
+  console.log('Events:', API_ENDPOINTS.events);
+  console.log('Notifications:', API_ENDPOINTS.notifications);
+  console.log('Courses:', API_ENDPOINTS.courses);
+  console.log('Schedules:', API_ENDPOINTS.schedules);
+  console.log('=====================================');
+
+  // Profile Photo Modal Function
+  function viewProfilePhoto(photoUrl) {
+    const modalHTML = `
+      <div class="modal fade" id="profilePhotoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 12px; border: none;">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
+              <h5 class="modal-title fw-bold">
+                <i class="bi bi-image me-2"></i>Profile Photo
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+              <img src="${photoUrl}" alt="Profile photo" class="img-fluid rounded" style="max-height: 70vh; max-width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            </div>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('profilePhotoModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add new modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('profilePhotoModal'));
+    modal.show();
+    
+    // Clean up modal from DOM after it's hidden
+    document.getElementById('profilePhotoModal').addEventListener('hidden.bs.modal', function() {
+      this.remove();
+    });
+  }
+
+  // Initialize tooltips on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+
+  // Open Task Details Modal
+  function openTaskDetails(taskId, title, course, dueDate, status, priority) {
+    const getStatusColor = (status) => {
+      if (status === 'completed') return '#28a745';
+      if (status === 'overdue') return '#dc3545';
+      if (priority === 'high') return '#ffc107';
+      return '#17a2b8';
+    };
+
+    const getStatusIcon = (status) => {
+      if (status === 'completed') return '<i class="bi bi-check-circle-fill"></i>';
+      if (status === 'overdue') return '<i class="bi bi-exclamation-circle-fill"></i>';
+      return '<i class="bi bi-hourglass-split"></i>';
+    };
+
+    const getPriorityBadgeColor = (priority) => {
+      if (priority === 'high') return 'danger';
+      if (priority === 'medium') return 'warning';
+      return 'info';
+    };
+
+    const modalHTML = `
+      <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 14px 14px 0 0; padding: 1.5rem;">
+              <div>
+                <h5 class="modal-title fw-bold mb-2">
+                  ${getStatusIcon(status)} Task Details
+                </h5>
+                <small style="opacity: 0.9;">Task ID: #${taskId}</small>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+              <!-- Task Title -->
+              <div class="mb-4">
+                <h3 class="fw-bold" style="color: var(--dark); margin-bottom: 0.5rem;">${escapeHtml(title)}</h3>
+                <p class="text-muted mb-0">
+                  <i class="bi bi-book me-2"></i>${escapeHtml(course)}
+                </p>
+              </div>
+
+              <!-- Status & Priority Row -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <label class="small fw-bold text-muted d-block mb-2">
+                    <i class="bi bi-flag-fill me-1"></i>STATUS
+                  </label>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background-color: ${getStatusColor(status)}; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                      ${escapeHtml(status).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="small fw-bold text-muted d-block mb-2">
+                    <i class="bi bi-lightning-fill me-1"></i>PRIORITY
+                  </label>
+                  <span class="badge bg-${getPriorityBadgeColor(priority)}" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    ${escapeHtml(priority).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Due Date Section -->
+              <div class="mb-4 p-3" style="background-color: rgba(0,0,0,0.03); border-radius: 8px; border-left: 4px solid var(--primary);">
+                <label class="small fw-bold text-muted d-block mb-2">
+                  <i class="bi bi-calendar-event me-1"></i>DUE DATE
+                </label>
+                <h6 class="mb-0" style="color: var(--dark);">
+                  <i class="bi bi-calendar-check me-2" style="color: var(--primary);"></i>${escapeHtml(dueDate)}
+                </h6>
+              </div>
+
+              <!-- Task Actions -->
+              <div class="mb-4 p-3" style="background-color: rgba(0,0,0,0.03); border-radius: 8px;">
+                <label class="small fw-bold text-muted d-block mb-3">
+                  <i class="bi bi-sliders me-1"></i>QUICK ACTIONS
+                </label>
+                <div class="d-flex gap-2 flex-wrap">
+                  <button class="btn btn-sm btn-outline-primary" onclick="this.disabled=true; toggleTask(${taskId}); setTimeout(() => { const modal = bootstrap.Modal.getInstance(document.getElementById('taskDetailsModal')); if(modal) modal.hide(); }, 500)" style="border-radius: 6px;">
+                    <i class="bi bi-check-circle me-1"></i>${status === 'completed' ? 'Mark Pending' : 'Mark Done'}
+                  </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.location.href='{% url 'student_assignments' %}'" style="border-radius: 6px;">
+                    <i class="bi bi-tasks me-1"></i>My Assignments
+                    </button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="if(confirm('Delete this task?')) { deleteTask(${taskId}); const modal = bootstrap.Modal.getInstance(document.getElementById('taskDetailsModal')); if(modal) modal.hide(); }" style="border-radius: 6px;">
+                    <i class="bi bi-trash me-1"></i>Delete Task
+                  </button>
+                </div>
+              </div>
+
+              <!-- Task Information -->
+              <div class="mb-3 p-3" style="background-color: rgba(0,0,0,0.03); border-radius: 8px;">
+                <label class="small fw-bold text-muted d-block mb-2">
+                  <i class="bi bi-info-circle me-1"></i>ADDITIONAL INFO
+                </label>
+                <ul class="list-unstyled small">
+                  <li class="mb-2">
+                    <strong>Created:</strong> 
+                    <span class="text-muted">2025-11-16 (Today)</span>
+                  </li>
+                  <li class="mb-2">
+                    <strong>Last Updated:</strong> 
+                    <span class="text-muted">5 minutes ago</span>
+                  </li>
+                  <li>
+                    <strong>Task Type:</strong> 
+                    <span class="badge bg-light text-dark">Assignment</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Progress Section -->
+              <div class="progress" style="height: 8px; border-radius: 4px;">
+                <div class="progress-bar" role="progressbar" style="width: ${status === 'completed' ? '100' : status === 'overdue' ? '50' : '75'}%; background: linear-gradient(90deg, var(--primary), var(--secondary));" aria-valuenow="${status === 'completed' ? '100' : status === 'overdue' ? '50' : '75'}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <small class="text-muted d-block mt-2">
+                ${status === 'completed' ? '✓ Task Completed' : status === 'overdue' ? '⚠ Task Overdue' : '⏳ In Progress'}
+              </small>
+            </div>
+            <div class="modal-footer border-top p-3" style="background-color: rgba(0,0,0,0.02);">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 6px;">Close</button>
+              <button type="button" class="btn btn-primary" onclick="alert('Submit assignment feature coming soon!')" style="border-radius: 6px;">
+                <i class="bi bi-cloud-upload me-1"></i>Submit Assignment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('taskDetailsModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add new modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
+    modal.show();
+    
+    // Clean up modal from DOM after it's hidden
+    document.getElementById('taskDetailsModal').addEventListener('hidden.bs.modal', function() {
+      this.remove();
+    });
+  }
+
+  // One Step Guide - Quick start tutorial
+  function showOneStepGuide() {
+    const guideHTML = `
+      <div class="modal fade" id="oneStepGuideModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+              <h5 class="modal-title fw-bold">
+                <i class="bi bi-lightning-fill me-2"></i>One Step Quick Guide
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">1</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">View Your Courses</h6>
+                    <p class="text-muted mb-0">Check all enrolled courses and track attendance in the Courses section.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">2</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Complete Assignments</h6>
+                    <p class="text-muted mb-0">View pending assignments in the Tasks section and submit them before due dates.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">3</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Download Materials</h6>
+                    <p class="text-muted mb-0">Access study materials uploaded by your instructors in the Materials section.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">4</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Check Events</h6>
+                    <p class="text-muted mb-0">Stay updated with upcoming seminars, exams, and events in the Events section.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">5</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Give Feedback</h6>
+                    <p class="text-muted mb-0">Share your feedback on courses and instructors using the Feedback section.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('oneStepGuideModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add new modal to body
+    document.body.insertAdjacentHTML('beforeend', guideHTML);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('oneStepGuideModal'));
+    modal.show();
+    
+    // Clean up modal from DOM after it's hidden
+    document.getElementById('oneStepGuideModal').addEventListener('hidden.bs.modal', function() {
+      this.remove();
+    });
+  }
+
+  // Mark All Notifications as Read - DISABLED (notification system removed)
+  function markAllNotificationsRead() {
+    console.log('Notification system disabled');
+    return;
+  }
+</script>
+
+<style>
+/* ========== CHATBOT WIDGET STYLES ========== */
+
+/* Chat Float Button */
+#chat-float-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 999;
+  animation: chatPulse 2s infinite;
+}
+
+#chat-float-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+}
+
+#chat-float-btn:active {
+  transform: scale(0.95);
+}
+
+/* Chat Pulse Animation */
+@keyframes chatPulse {
+  0%, 100% {
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.8);
+  }
+}
+
+/* Chat Widget Container */
+.chat-widget {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 400px;
+  max-width: calc(100vw - 20px);
+  height: 600px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chat Header */
+.chat-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.chat-header h6 {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-status {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chat-header-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: robotBounce 0.8s ease-in-out infinite;
+}
+
+@keyframes robotBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Chat Menu Button */
+.chat-menu-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-size: 18px;
+}
+
+.chat-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Chat Menu Dropdown */
+.chat-menu {
+  position: absolute;
+  top: 50px;
+  right: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1001;
+  display: none;
+  animation: slideDownMenu 0.2s ease-out;
+}
+
+@keyframes slideDownMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-menu.show {
+  display: block;
+}
+
+.chat-menu-item {
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.chat-menu-item:last-child {
+  border-bottom: none;
+}
+
+.chat-menu-item:hover {
+  background: #f8f9fa;
+  color: #667eea;
+  padding-left: 20px;
+}
+
+.chat-menu-item i {
+  margin-right: 10px;
+  color: #667eea;
+}
+
+/* Chat Body */
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8f9fa;
+  scroll-behavior: smooth;
+}
+
+.chat-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* Chat Message Bubble */
+.chat-bubble {
+  display: flex;
+  gap: 8px;
+  animation: fadeInMessage 0.3s ease-out;
+}
+
+@keyframes fadeInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-bubble.user {
+  justify-content: flex-end;
+}
+
+.chat-bubble.bot {
+  justify-content: flex-start;
+}
+
+.chat-message {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.chat-bubble.user .chat-message {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble.bot .chat-message {
+  background: #e8eaf6;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message-timestamp {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: center;
+  width: 100%;
+  margin-top: 4px;
+  color: #999;
+}
+
+.chat-bubble.user .chat-message-timestamp {
+  color: #667eea;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 14px;
+  background: #e8eaf6;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  width: fit-content;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #667eea;
+  animation: typingAnimation 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0%, 60%, 100% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+}
+
+/* Chat Suggestions */
+.chat-suggestions {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: white;
+  border-top: 1px solid #e8eaf6;
+}
+
+.chat-suggestion-btn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.chat-suggestion-btn:hover {
+  background: #f0f0f0;
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.chat-suggestion-btn:active {
+  transform: translateY(0);
+}
+
+/* Chat Input Group */
+.chat-input-group {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e8eaf6;
+  flex-shrink: 0;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #e8eaf6;
+  border-radius: 20px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.chat-input::placeholder {
+  color: #999;
+}
+
+.chat-send-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.chat-send-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.chat-send-btn:active {
+  transform: scale(0.95);
+}
+
+.chat-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error Bubble */
+.chat-error {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #c33;
+  font-size: 13px;
+  margin: 8px 0;
+  animation: shakeError 0.4s ease-out;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-widget {
+    width: calc(100vw - 20px);
+    height: 70vh;
+    max-height: 600px;
+    bottom: 80px;
+    right: 10px;
+  }
+  
+  #chat-float-btn {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .chat-bubble {
+    max-width: 90%;
+  }
+  
+  .chat-message {
+    max-width: 100%;
+  }
+  
+  .chat-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-widget {
+    width: calc(100vw - 10px);
+    height: 65vh;
+    border-radius: 12px;
+  }
+  
+  .chat-header {
+    padding: 12px;
+  }
+  
+  .chat-header h6 {
+    font-size: 14px;
+  }
+  
+  .chat-input-group {
+    padding: 10px 12px;
+  }
+}
+
+/* Dark Mode Support (optional) */
+@media (prefers-color-scheme: dark) {
+  .chat-widget {
+    background: #2a2a2a;
+  }
+  
+  .chat-body {
+    background: #1e1e1e;
+  }
+  
+  .chat-bubble.bot .chat-message {
+    background: #3a3a3a;
+    color: #e0e0e0;
+  }
+  
+  .chat-menu-item {
+    color: #e0e0e0;
+    border-bottom-color: #444;
+  }
+  
+  .chat-menu-item:hover {
+    background: #3a3a3a;
+  }
+  
+  .chat-input {
+    background: #3a3a3a;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  
+  .chat-menu {
+    background: #3a3a3a;
+  }
+}
+</style>
+{% endblock %}

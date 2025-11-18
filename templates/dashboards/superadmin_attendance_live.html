@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Attendance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2>Live Attendance (Superadmin)</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Admin Dashboard</a>
+  </div>
+  <p>Placeholder for daily check-in/out tracking and biometric/QR integration.</p>
+
+  <ul class="list-group">
+    {% for c in live_checkins %}
+      <li class="list-group-item">{{ c.student }} — {{ c.time }} ({{ c.method }})</li>
+    {% empty %}
+      <li class="list-group-item">No live entries</li>
+    {% endfor %}
+  </ul>
+
+</div>
+{% endblock %}

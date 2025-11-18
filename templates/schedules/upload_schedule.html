@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Schedule{% endblock %}
+
+{% block content %}
+<style>
+  .page-header-box {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    padding: 25px 30px;
+    border-radius: 14px;
+    color: #fff;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+  }
+
+  .card-custom {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    padding: 30px;
+    animation: fadeIn .6s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn-custom-primary {
+    background: #4f46e5;
+    border: none;
+    transition: 0.3s;
+    padding: 10px 18px;
+    border-radius: 10px;
+  }
+  .btn-custom-primary:hover {
+    background: #372fd3;
+    transform: translateY(-2px);
+  }
+
+  .btn-custom-secondary {
+    border-radius: 10px;
+    padding: 10px 18px;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 12px;
+  }
+</style>
+
+<div class="container py-4">
+
+  <!-- HEADER -->
+  <div class="page-header-box">
+    <h2 class="mb-1"><i class="bi bi-calendar2-plus me-2"></i> Create Schedule / Event</h2>
+    <small class="opacity-75">Add a new event, class schedule, or meeting</small>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="card card-custom">
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Title -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Title</label>
+        {{ form.title }}
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Description</label>
+        {{ form.description }}
+      </div>
+
+      <!-- Date / Time -->
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Date</label>
+          {{ form.date }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Start Time</label>
+          {{ form.start_time }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">End Time</label>
+          {{ form.end_time }}
+        </div>
+      </div>
+
+      <!-- Course Selection -->
+      <div class="mb-3 mt-3">
+        <label class="form-label fw-semibold">Course (Optional)</label>
+        <select name="course" class="form-select">
+          <option value="">General / Not tied to a course</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}">{{ c.code }} - {{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Public Checkbox -->
+      <div class="form-check mb-3">
+        {{ form.is_public }}
+        <label class="form-check-label fw-semibold" for="{{ form.is_public.id_for_label }}">
+          Make Public
+        </label>
+      </div>
+
+      <!-- File Upload -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Attachment (Optional)</label>
+        {{ form.attachment }}
+      </div>
+
+      <!-- Buttons -->
+      <div class="mt-4">
+        <button class="btn btn-custom-primary" type="submit">
+          <i class="bi bi-check-circle me-1"></i> Create Schedule
+        </button>
+
+        <a class="btn btn-secondary btn-custom-secondary ms-2" href="{% url 'teacher_schedules' %}">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

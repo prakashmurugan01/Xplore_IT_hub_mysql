@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Schedule{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Edit Schedule / Event</h2>
+      <p class="text-muted">Update the details of your schedule</p>
+    </div>
+    <a href="{% url 'teacher_schedules' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          {{ form.title.label_tag }}
+          {{ form.title }}
+          {% if form.title.errors %}
+            <div class="alert alert-danger mt-2">{{ form.title.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.description.label_tag }}
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="alert alert-danger mt-2">{{ form.description.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row g-2">
+          <div class="col-md-4 mb-3">
+            {{ form.date.label_tag }}
+            {{ form.date }}
+            {% if form.date.errors %}
+              <div class="alert alert-danger mt-2">{{ form.date.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4 mb-3">
+            {{ form.start_time.label_tag }}
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+              <div class="alert alert-danger mt-2">{{ form.start_time.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4 mb-3">
+            {{ form.end_time.label_tag }}
+            {{ form.end_time }}
+            {% if form.end_time.errors %}
+              <div class="alert alert-danger mt-2">{{ form.end_time.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label>Course (optional)</label>
+          <select name="course" class="form-select">
+            <option value="">General / Not tied to a course</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if schedule.course.id == c.id %}selected{% endif %}>{{ c.code }} - {{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3 form-check">
+          {{ form.is_public }} {{ form.is_public.label_tag }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.attachment.label_tag }}
+          {% if schedule.attachment %}
+            <div class="mb-2">
+              <strong>Current file:</strong> <a href="{{ schedule.attachment.url }}" target="_blank">{{ schedule.attachment.name }}</a>
+            </div>
+          {% endif %}
+          {{ form.attachment }}
+          <small class="form-text text-muted">Leave blank to keep the current attachment</small>
+        </div>
+
+        <div class="mb-3">
+          {{ form.location.label_tag }}
+          {{ form.location }}
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-check-circle"></i> Update Schedule
+          </button>
+          <a class="btn btn-secondary" href="{% url 'teacher_schedules' %}">
+            <i class="bi bi-x-circle"></i> Cancel
+          </a>
+          <a class="btn btn-outline-danger ms-auto" href="{% url 'delete_schedule' schedule.id %}">
+            <i class="bi bi-trash"></i> Delete
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    border: none;
+    border-radius: 12px;
+  }
+
+  form input, form textarea, form select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  form input:focus, form textarea:focus, form select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+</style>
+{% endblock %}

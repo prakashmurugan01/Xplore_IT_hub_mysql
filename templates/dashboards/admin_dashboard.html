@@ -1,0 +1,521 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-tachometer-alt"></i>
+            <span class="ms-2">Super Admin Dashboard</span>
+        </h2>
+
+        <!-- Actions toolbar -->
+        <div class="btn-toolbar" role="toolbar" aria-label="Admin actions">
+            <div class="btn-group me-2" role="group" aria-label="Export group">
+                <button id="exportDropdownBtn" type="button" class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Export</button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdownBtn">
+                    <li><a class="dropdown-item" href="{% url 'export_users_pdf' %}"><i class="fas fa-file-pdf me-2 text-danger"></i> Export Users (PDF)</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportUsersXlsx"><i class="fas fa-file-excel me-2 text-success"></i> Export Users (Excel)</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportAllData"><i class="fas fa-database me-2"></i> Export Full Backup (CSV)</a></li>
+                </ul>
+            </div>
+
+            <div class="btn-group" role="group" aria-label="Advanced group">
+                <button id="advancedDropdown" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Advanced</button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="advancedDropdown">
+                    <li><a class="dropdown-item" href="#" id="openStudentMgmt">Manage Students</a></li>
+                    <li><a class="dropdown-item" href="#" id="openTeacherMgmt">Manage Teachers</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-muted" href="#">Future: Bulk actions, audit logs, role manager</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Card Admin Panel: Student & Teacher -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="admin-two-card">
+                <div class="card student-panel">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0"><i class="fas fa-user-graduate"></i> Student Information</h5>
+                            <small class="text-muted">Profile, reports, behavior logs</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input id="studentSearch" class="form-control form-control-sm" placeholder="Search students..." aria-label="Search students" style="min-width:220px;" />
+                            <button id="studentExportPdf" type="button" class="btn btn-sm btn-outline-secondary" title="Export PDF" aria-label="Export selected student to PDF"><i class="fas fa-file-pdf"></i></button>
+                            <button id="studentExportXlsx" type="button" class="btn btn-sm btn-outline-secondary" title="Export Excel" aria-label="Export selected student to Excel"><i class="fas fa-file-excel"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="student-preview d-flex gap-3 align-items-center">
+                            <img id="studentPhoto" src="https://via.placeholder.com/80x80?text=Photo" alt="Student photo" class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
+                            <div>
+                                <div id="studentName" class="h6 mb-0">Select a student</div>
+                                <div id="studentMeta" class="text-muted small">ID: - • Class: - • Section: -</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 student-widgets">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="card p-2 mb-2">
+                                        <strong>Academic Report</strong>
+                                        <div id="studentGrades" class="small text-muted">No student selected</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card p-2 mb-2">
+                                        <strong>Behavior & Activity</strong>
+                                        <div id="studentActivity" class="small text-muted">No entries</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <button id="studentLiveBtn" type="button" class="btn btn-sm btn-primary"><i class="fas fa-video"></i> Live Portal</button>
+                            <button id="studentAiBtn" type="button" class="btn btn-sm btn-outline-info"><i class="fas fa-robot"></i> AI Insights</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card teacher-panel">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Teacher Panel</h5>
+                            <small class="text-muted">Profiles, class reports, announcements</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="teacherAddBtn" class="btn btn-sm btn-success" title="Add Teacher"><i class="fas fa-user-plus"></i></button>
+                            <div class="form-check form-switch ms-2">
+                                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                                <label class="form-check-label small" for="darkModeToggle">Dark Mode</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="teacher-preview d-flex gap-3 align-items-center">
+                            <img id="teacherPhoto" src="https://via.placeholder.com/80x80?text=Photo" alt="Teacher photo" class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
+                            <div>
+                                <div id="teacherName" class="h6 mb-0">Select a teacher</div>
+                                <div id="teacherMeta" class="text-muted small">ID: - • Subject: -</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 teacher-widgets">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="card p-2 mb-2">
+                                        <strong>Class Reports</strong>
+                                        <div id="classReports" class="small text-muted">No class selected</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card p-2 mb-2">
+                                        <strong>Live Tools</strong>
+                                        <div class="mt-1"><button id="announceBtn" class="btn btn-sm btn-outline-primary">Post Announcement</button> <button id="joinLiveBtn" class="btn btn-sm btn-primary">Join Class</button></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 d-flex gap-2">
+                            <button id="teacherAiBtn" type="button" class="btn btn-sm btn-outline-info"><i class="fas fa-robot"></i> AI Assistant</button>
+                            <button id="adsPanelBtn" type="button" class="btn btn-sm btn-outline-secondary">Future Ads Panel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Two-card admin styles */
+        .admin-two-card{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+        .admin-two-card .card{border-radius:12px;overflow:visible}
+        .student-panel .student-preview, .teacher-panel .teacher-preview{align-items:center}
+        .dashboard-card { border-radius: 10px; box-shadow: 0 6px 14px rgba(24, 40, 57, 0.06); }
+        .student-preview img, .teacher-preview img { width:80px;height:80px;object-fit:cover }
+        @media(max-width:992px){.admin-two-card{grid-template-columns:1fr;}}
+    </style>
+
+    <!-- Statistics Cards -->
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Students</h6>
+                            <h2 class="mb-0">{{ total_students|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-user-graduate fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Teachers</h6>
+                            <h2 class="mb-0">{{ total_teachers|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-chalkboard-teacher fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Courses</h6>
+                            <h2 class="mb-0">{{ total_courses|default:0 }}</h2>
+                        </div>
+                        <i class="fas fa-book fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Active Users</h6>
+                            <h2 class="mb-0">
+                                {{ total_students|default:0|add:total_teachers|default:0 }}
+                            </h2>
+                        </div>
+                        <i class="fas fa-users fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{% url 'export_users_pdf' %}" class="btn btn-sm btn-light mb-2">
+                                <i class="fas fa-download"></i> Export Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Charts Row -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> User Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> System Activity</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Recent Registrations</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Joined Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="badge bg-info">{{ user.profile.role|default:"N/A" }}</span></td>
+                                <td>{{ user.profile.department|default:"N/A" }}</td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'admin_download_student_report' user.id %}">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No recent registrations</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+                <!-- AI Insights Modal -->
+                <div class="modal fade" id="aiInsightsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">AI Insights</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="aiInsightsContent">Loading insights...</div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcement Modal -->
+                <div class="modal fade" id="announceModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-md modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Post Announcement</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea id="announceText" class="form-control" rows="4" placeholder="Write announcement..."></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="postAnnounceBtn" class="btn btn-primary">Post</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voice Command Floating Button -->
+                <button id="voiceCmdBtn" title="Voice Commands" style="position:fixed;right:18px;bottom:18px;z-index:1050;" class="btn btn-primary btn-lg rounded-circle">
+                        <i class="fas fa-microphone"></i>
+                </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="userCountsJSON" type="application/json">{{ user_counts|json_script:'userCounts' }}</script>
+<script id="signupLabelsJSON" type="application/json">{{ signup_labels|json_script:'signupLabels' }}</script>
+<script id="signupCountsJSON" type="application/json">{{ signup_counts|json_script:'signupCounts' }}</script>
+<script>
+// Prepare chart data via JSON script tags to ensure valid JS
+const userCounts = JSON.parse(document.getElementById('userCountsJSON').textContent || '[]');
+const signupLabels = JSON.parse(document.getElementById('signupLabelsJSON').textContent || '[]');
+const signupCounts = JSON.parse(document.getElementById('signupCountsJSON').textContent || '[]');
+
+// User distribution doughnut with legend and tooltips
+const userCtx = document.getElementById('userChart').getContext('2d');
+new Chart(userCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Students','Teachers','Other'],
+        datasets: [{ data: userCounts, backgroundColor: ['#0d6efd','#198754','#ffc107'] }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index' } },
+        cutout: '60%'
+    }
+});
+
+// Recent signups area chart with smoothing
+const actCtx = document.getElementById('activityChart').getContext('2d');
+new Chart(actCtx, {
+    type: 'line',
+    data: {
+        labels: signupLabels,
+        datasets: [{ label: 'Signups', data: signupCounts, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.08)', tension: 0.3, fill: true }]
+    },
+    options: { responsive: true, plugins: { tooltip: { intersect: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+// Export button handlers (Excel/backup are placeholders that can be wired to backend)
+document.getElementById('exportUsersXlsx').addEventListener('click', function(){
+    alert('Export to Excel requested — backend endpoint not yet implemented');
+});
+document.getElementById('exportAllData').addEventListener('click', function(){
+    if(confirm('Export all data as CSV may take time. Continue?')){
+        alert('Starting export... (implement server endpoint to generate backup)');
+    }
+});
+
+// Wire quick management links (placeholders)
+document.getElementById('openStudentMgmt').addEventListener('click', ()=> alert('Open Student Management — implement route'));
+document.getElementById('openTeacherMgmt').addEventListener('click', ()=> alert('Open Teacher Management — implement route'));
+</script>
+<script>
+// Admin dashboard interactivity
+document.addEventListener('DOMContentLoaded', function(){
+    const studentSearch = document.getElementById('studentSearch');
+    const darkToggle = document.getElementById('darkModeToggle');
+
+    if(studentSearch){
+        // Enhanced fuzzy search: hide non-matching rows and select first match
+        studentSearch.addEventListener('input', function(){
+            const q = this.value.toLowerCase().trim();
+            const rows = Array.from(document.querySelectorAll('table.table tbody tr'));
+            let first = null;
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                const match = q === '' || fuzzyMatch(text, q);
+                r.style.display = match ? '' : 'none';
+                if(match && !first) first = r;
+            });
+            if(first){
+                // simulate selection
+                first.classList.add('table-primary');
+                populateStudentPanelFromRow(first);
+            }
+        });
+    }
+
+    if(darkToggle){
+        darkToggle.addEventListener('change', function(){
+            if(this.checked){
+                document.documentElement.classList.add('dark-admin');
+                localStorage.setItem('admin_dark', '1');
+            } else {
+                document.documentElement.classList.remove('dark-admin');
+                localStorage.removeItem('admin_dark');
+            }
+        });
+        // restore
+        if(localStorage.getItem('admin_dark')){
+            darkToggle.checked = true;
+            document.documentElement.classList.add('dark-admin');
+        }
+    }
+
+    // Export buttons (stubs)
+    const pdfBtn = document.getElementById('studentExportPdf');
+    const xlsxBtn = document.getElementById('studentExportXlsx');
+    if(pdfBtn) pdfBtn.addEventListener('click', ()=> alert('Student PDF export: backend endpoint required'));
+    if(xlsxBtn) xlsxBtn.addEventListener('click', ()=> alert('Student Excel export: backend endpoint required'));
+
+    // AI & Live stubs
+    const studentAi = document.getElementById('studentAiBtn');
+    if(studentAi) studentAi.addEventListener('click', ()=> {
+        const aiModal = new bootstrap.Modal(document.getElementById('aiInsightsModal'));
+        document.getElementById('aiInsightsContent').innerHTML = 'Fetching AI insights...';
+        aiModal.show();
+        // Placeholder: fetch insights from backend
+        setTimeout(()=> document.getElementById('aiInsightsContent').innerHTML = '<pre>Predicted risk: Low\nRecommended actions: Give advanced tasks, monitor attendance</pre>', 900);
+    });
+    const teacherAi = document.getElementById('teacherAiBtn');
+    if(teacherAi) teacherAi.addEventListener('click', ()=> alert('AI Assistant: integrate suggestion endpoint'));
+    const liveBtn = document.getElementById('studentLiveBtn');
+    if(liveBtn) liveBtn.addEventListener('click', ()=> alert('Live Portal: redirect to class portal'));
+
+    // Announcement modal
+    const announceBtn = document.getElementById('announceBtn');
+    if(announceBtn) announceBtn.addEventListener('click', ()=> new bootstrap.Modal(document.getElementById('announceModal')).show());
+    const postAnnounceBtn = document.getElementById('postAnnounceBtn');
+    if(postAnnounceBtn) postAnnounceBtn.addEventListener('click', ()=>{
+        const txt = document.getElementById('announceText').value.trim();
+        if(!txt) return alert('Announcement cannot be empty');
+        // TODO: POST announcement to backend
+        alert('Posted: ' + txt);
+        document.getElementById('announceText').value = '';
+        bootstrap.Modal.getInstance(document.getElementById('announceModal')).hide();
+    });
+
+    // Row click selects student/teacher
+    document.querySelectorAll('table.table tbody tr').forEach(r => {
+        r.addEventListener('click', ()=>{
+            document.querySelectorAll('table.table tbody tr').forEach(x=>x.classList.remove('table-primary'));
+            r.classList.add('table-primary');
+            populateStudentPanelFromRow(r);
+        });
+    });
+
+    // Populate teacher add button
+    const teacherAddBtn = document.getElementById('teacherAddBtn');
+    if(teacherAddBtn) teacherAddBtn.addEventListener('click', ()=> alert('Open Add Teacher modal (not implemented)'));
+
+    // Voice command stub (uses Web Speech API if available)
+    const voiceBtn = document.getElementById('voiceCmdBtn');
+    
+    if(voiceBtn){
+        voiceBtn.addEventListener('click', ()=>{
+            if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+                return alert('Voice commands not supported in this browser');
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const rec = new SpeechRecognition();
+            rec.lang = 'en-US';
+            rec.start();
+            rec.onresult = (e)=>{
+                const text = e.results[0][0].transcript.toLowerCase();
+                alert('Heard: ' + text + '\n(Integrate NLU to perform actions)');
+                rec.stop();
+            };
+        });
+    }
+
+    // Helper: fuzzy match (simple)
+    function fuzzyMatch(text, query){
+        // split query words and ensure all are present in text
+        return query.split(/\s+/).every(w => text.indexOf(w) !== -1);
+    }
+
+    function populateStudentPanelFromRow(row){
+        try{
+            const username = row.children[0].innerText.trim();
+            const email = row.children[1].innerText.trim();
+            const role = row.children[2].innerText.trim();
+            const joined = row.children[4].innerText.trim();
+            document.getElementById('studentName').innerText = username;
+            document.getElementById('studentMeta').innerText = `Email: ${email} • Role: ${role} • Joined: ${joined}`;
+            document.getElementById('studentGrades').innerText = 'Grades: A (demo) — Attendance: 92%';
+            document.getElementById('studentActivity').innerText = 'Participation: High — Achievements: 2';
+            // change student photo to placeholder with initials
+            document.getElementById('studentPhoto').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=7CB342&color=fff&size=128`;
+        }catch(e){console.warn(e)}
+    }
+});
+</script>
+
+<style>
+/* Dark mode for admin panel */
+.dark-admin body, .dark-admin .card { background: #0f1720; color: #e6eef8; }
+.dark-admin .card { border-color: rgba(255,255,255,0.05); }
+.dark-admin .table { color: #dbeafe; }
+</style>
+{% endblock %}

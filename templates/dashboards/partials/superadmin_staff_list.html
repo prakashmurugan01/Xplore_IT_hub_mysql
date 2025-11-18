@@ -1,0 +1,26 @@
+<div class="table-responsive">
+  <table class="table table-sm table-dark table-striped">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Position</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in staff %}
+      <tr>
+        <td>{{ s.profile.user.username }}</td>
+        <td>{{ s.profile.user.get_full_name|default:s.profile.user.username }}</td>
+        <td>{{ s.profile.department }}</td>
+        <td>{{ s.position }}</td>
+        <td><a class="btn btn-sm btn-light" href="{% url 'admin2_staff' %}#staff-{{ s.id }}"><i class="fas fa-eye"></i> View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No staff members found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

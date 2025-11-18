@@ -1,0 +1,945 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin2 Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stat-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .stat-card.students { border-left-color: #0d6efd; }
+  .stat-card.teachers { border-left-color: #6f42c1; }
+  .stat-card.staff { border-left-color: #fd7e14; }
+  .stat-card.revenue { border-left-color: #198754; }
+  
+  .stat-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2.5rem;
+    opacity: 0.2;
+  }
+  
+  .trend-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+  
+  .activity-item {
+    padding: 0.75rem;
+    border-left: 3px solid #dee2e6;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+  }
+  .activity-item:hover {
+    background-color: #f8f9fa;
+    border-left-color: #0d6efd;
+  }
+  
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  .filter-panel {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .quick-action-card {
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .quick-action-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+  
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  .progress-ring {
+    transform: rotate(-90deg);
+  }
+  
+  .dark-mode .card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .search-box {
+    position: relative;
+  }
+  .search-box input {
+    padding-left: 2.5rem;
+  }
+  .search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Admin2 Control Panel</h1>
+      <p class="text-muted mb-0">Welcome back! Here's what's happening today.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      {% include 'dashboards/_dashboard_action_buttons.html' %}
+      
+      <!-- One Step & Read Buttons -->
+      <button class="btn btn-info btn-sm" onclick="showOneStepGuideAdmin2()" title="One Step Guide">
+        <i class="bi bi-lightning-fill me-1"></i>One Step
+      </button>
+      <button class="btn btn-success btn-sm" onclick="markAllNotificationsReadAdmin2()" title="Mark All as Read">
+        <i class="bi bi-check-all me-1"></i>Read
+      </button>
+      
+      <!-- Notification Bell -->
+      <button class="btn btn-outline-secondary position-relative" id="notificationBtn">
+        <i class="bi bi-bell"></i>
+        <span class="notification-badge" id="notificationCount">3</span>
+      </button>
+      
+      <!-- Date Range Picker -->
+      <select class="form-select" id="dateRange" style="width: auto;">
+        <option value="today">Today</option>
+        <option value="week" selected>This Week</option>
+        <option value="month">This Month</option>
+        <option value="year">This Year</option>
+        <option value="custom">Custom Range</option>
+      </select>
+      
+      <!-- Dark Mode Toggle -->
+      <button class="btn btn-outline-secondary" id="darkModeToggle">
+        <i class="bi bi-moon-stars"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Panel -->
+  <div class="filter-panel collapse" id="filterPanel">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" class="form-control" id="searchInput" placeholder="Search...">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="categoryFilter">
+          <option value="">All</option>
+          <option value="students">Students</option>
+          <option value="teachers">Teachers</option>
+          <option value="staff">Staff</option>
+          <option value="finance">Finance</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="statusFilter">
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Date From</label>
+        <input type="date" class="form-control" id="dateFrom">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+  
+  <button class="btn btn-sm btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+    <i class="bi bi-funnel"></i> Toggle Filters
+  </button>
+
+  <!-- Statistics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card stat-card students p-3" data-key="total_students">
+        <div class="stat-icon">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <h6 class="text-muted mb-2">Total Students</h6>
+        <div class="d-flex align-items-end justify-content-between">
+          <div class="h4 mb-0" id="totalStudents">{{ total_students|default:"0" }}</div>
+          <span class="badge bg-success trend-badge">
+            <i class="bi bi-arrow-up"></i> 5.2%
+          </span>
+        </div>
+        <div class="progress mt-2" style="height: 4px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+        </div>
+        <small class="text-muted mt-1">vs last month</small>
+      </div>
+    </div>
+    
+    <div class="col-md-3">
+      <div class="card stat-card teachers p-3" data-key="total_teachers">
+        <div class="stat-icon">
+          <i class="bi bi-person-badge-fill"></i>
+        </div>
+        <h6 class="text-muted mb-2">Total Teachers</h6>
+        <div class="d-flex align-items-end justify-content-between">
+          <div class="h4 mb-0" id="totalTeachers">{{ total_teachers|default:"0" }}</div>
+          <span class="badge bg-info trend-badge">
+            <i class="bi bi-arrow-up"></i> 2.1%
+          </span>
+        </div>
+        <div class="progress mt-2" style="height: 4px;">
+          <div class="progress-bar bg-purple" role="progressbar" style="width: 60%"></div>
+        </div>
+        <small class="text-muted mt-1">vs last month</small>
+      </div>
+    </div>
+    
+    <div class="col-md-3">
+      <div class="card stat-card staff p-3" data-key="total_staff">
+        <div class="stat-icon">
+          <i class="bi bi-person-workspace"></i>
+        </div>
+        <h6 class="text-muted mb-2">Total Staff</h6>
+        <div class="d-flex align-items-end justify-content-between">
+          <div class="h4 mb-0" id="totalStaff">{{ total_staff|default:"0" }}</div>
+          <span class="badge bg-warning trend-badge">
+            <i class="bi bi-dash"></i> 0.0%
+          </span>
+        </div>
+        <div class="progress mt-2" style="height: 4px;">
+          <div class="progress-bar bg-warning" role="progressbar" style="width: 50%"></div>
+        </div>
+        <small class="text-muted mt-1">vs last month</small>
+      </div>
+    </div>
+    
+    <div class="col-md-3">
+      <div class="card stat-card revenue p-3" data-key="total_fee_revenue">
+        <div class="stat-icon">
+          <i class="bi bi-cash-stack"></i>
+        </div>
+        <h6 class="text-muted mb-2">Total Fee Revenue</h6>
+        <div class="d-flex align-items-end justify-content-between">
+          <div class="h4 mb-0" id="totalRevenue">{{ total_fee_revenue|default:"₹0" }}</div>
+          <span class="badge bg-success trend-badge">
+            <i class="bi bi-arrow-up"></i> 12.4%
+          </span>
+        </div>
+        <div class="progress mt-2" style="height: 4px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+        </div>
+        <small class="text-muted mt-1">vs last month</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Analytics -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-8">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Revenue Overview</h5>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-chart="revenue">Revenue</button>
+            <button type="button" class="btn btn-outline-primary" data-chart="students">Students</button>
+            <button type="button" class="btn btn-outline-primary" data-chart="attendance">Attendance</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5 class="mb-3">Distribution</h5>
+        <div class="chart-container" style="height: 250px;">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity & Quick Actions -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Recent Activity</h5>
+          <a href="#" class="text-decoration-none">View All</a>
+        </div>
+        <div id="activityFeed">
+          <div class="activity-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>New Student Enrollment</strong>
+                <p class="mb-0 text-muted small">John Doe enrolled in Class 10-A</p>
+              </div>
+              <small class="text-muted">5 min ago</small>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>Fee Payment Received</strong>
+                <p class="mb-0 text-muted small">₹15,000 from Student ID: 2045</p>
+              </div>
+              <small class="text-muted">12 min ago</small>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>Staff Salary Processed</strong>
+                <p class="mb-0 text-muted small">Monthly salary for 25 staff members</p>
+              </div>
+              <small class="text-muted">1 hour ago</small>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong>New Teacher Onboarded</strong>
+                <p class="mb-0 text-muted small">Sarah Williams - Mathematics</p>
+              </div>
+              <small class="text-muted">3 hours ago</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5 class="mb-3">Quick Actions</h5>
+        <div class="row g-2">
+          <div class="col-6">
+            <a href="{% url 'admin2_staff' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-primary">
+                <i class="bi bi-people fs-2 text-primary"></i>
+                <div class="mt-2">Manage Staff</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="{% url 'admin2_financial' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-success">
+                <i class="bi bi-graph-up fs-2 text-success"></i>
+                <div class="mt-2">View Finance</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="{% url 'admin2_payouts' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-warning">
+                <i class="bi bi-wallet2 fs-2 text-warning"></i>
+                <div class="mt-2">Process Payouts</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="{% url 'admin2_notifications' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-info">
+                <i class="bi bi-bell fs-2 text-info"></i>
+                <div class="mt-2">Send Notification</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="{% url 'admin2_add_salary' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-secondary">
+                <i class="bi bi-cash-coin fs-2 text-secondary"></i>
+                <div class="mt-2">Add Salary</div>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="{% url 'admin2_record_fee' %}" class="text-decoration-none">
+              <div class="card quick-action-card p-3 text-center border-secondary">
+                <i class="bi bi-receipt fs-2 text-secondary"></i>
+                <div class="mt-2">Record Fee</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="card p-3 mb-4">
+    <h5 class="mb-3">Administrative Actions</h5>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" href="{% url 'admin2_staff' %}">
+        <i class="bi bi-people"></i> Manage Staff
+      </a>
+      <a class="btn btn-success" href="{% url 'admin2_financial' %}">
+        <i class="bi bi-graph-up"></i> View Finance
+      </a>
+      <a class="btn btn-warning" href="{% url 'admin2_payouts' %}">
+        <i class="bi bi-wallet2"></i> Process Payouts
+      </a>
+      <a class="btn btn-info" href="{% url 'admin2_notifications' %}">
+        <i class="bi bi-bell"></i> Send Notification
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'admin2_add_salary' %}">
+        <i class="bi bi-cash-coin"></i> Add Salary
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'admin2_record_fee' %}">
+        <i class="bi bi-receipt"></i> Record Fee
+      </a>
+      <button class="btn btn-dark" id="generateReportBtn">
+        <i class="bi bi-file-earmark-excel"></i> Generate Report
+      </button>
+      <button class="btn btn-outline-danger" id="exportPdfBtn">
+        <i class="bi bi-file-pdf"></i> Export PDF
+      </button>
+      <button class="btn btn-outline-primary" id="scheduleTaskBtn">
+        <i class="bi bi-calendar-check"></i> Schedule Task
+      </button>
+      <button class="btn btn-outline-success" id="bulkActionBtn">
+        <i class="bi bi-list-check"></i> Bulk Actions
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Component -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Notifications</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group">
+          <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">New Student Enrolled</h6>
+              <small class="text-muted">just now</small>
+            </div>
+            <p class="mb-1">A new student has joined Class 10-A</p>
+          </div>
+          <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Payment Received</h6>
+              <small class="text-muted">5 mins ago</small>
+            </div>
+            <p class="mb-1">Fee payment of ₹15,000 received</p>
+          </div>
+          <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Staff Leave Request</h6>
+              <small class="text-muted">1 hour ago</small>
+            </div>
+            <p class="mb-1">New leave request pending approval</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Mark All Read</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+<script>
+(function() {
+  const url = '{% url "admin2_updates" %}';
+  
+  // Initialize Charts
+  const ctxMain = document.getElementById('mainChart');
+  const mainChart = new Chart(ctxMain, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      datasets: [{
+        label: 'Revenue',
+        data: [12000, 19000, 15000, 25000, 22000, 30000, 35000],
+        borderColor: 'rgb(13, 110, 253)',
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => '₹' + value.toLocaleString()
+          }
+        }
+      }
+    }
+  });
+
+  const ctxPie = document.getElementById('pieChart');
+  const pieChart = new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+      labels: ['Students', 'Teachers', 'Staff', 'Other'],
+      datasets: [{
+        data: [60, 20, 15, 5],
+        backgroundColor: [
+          'rgb(13, 110, 253)',
+          'rgb(111, 66, 193)',
+          'rgb(253, 126, 20)',
+          'rgb(108, 117, 125)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  // Chart switching
+  document.querySelectorAll('[data-chart]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-chart]').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      const chartType = this.getAttribute('data-chart');
+      let newData, newLabel;
+      
+      switch(chartType) {
+        case 'students':
+          newData = [320, 340, 355, 370, 385, 400, 420];
+          newLabel = 'Students';
+          break;
+        case 'attendance':
+          newData = [85, 88, 82, 90, 87, 92, 89];
+          newLabel = 'Attendance %';
+          break;
+        default:
+          newData = [12000, 19000, 15000, 25000, 22000, 30000, 35000];
+          newLabel = 'Revenue';
+      }
+      
+      mainChart.data.datasets[0].data = newData;
+      mainChart.data.datasets[0].label = newLabel;
+      mainChart.update();
+    });
+  });
+
+  // Polling for updates
+  const update = async () => {
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      document.querySelectorAll('.stat-card').forEach(card => {
+        const key = card.getAttribute('data-key');
+        if (!key || data[key] === undefined) return;
+        
+        const el = card.querySelector('.h4');
+        if (!el) return;
+        
+        const oldValue = el.textContent;
+        const newValue = data[key];
+        
+        if (oldValue !== String(newValue)) {
+          el.classList.add('pulse');
+          el.textContent = newValue;
+          setTimeout(() => el.classList.remove('pulse'), 2000);
+        }
+      });
+    } catch (e) {
+      console.error('Polling error:', e);
+    }
+  };
+
+  setTimeout(update, 500);
+  setInterval(update, 8000);
+
+  // Dark mode toggle
+  document.getElementById('darkModeToggle')?.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    const icon = this.querySelector('i');
+    icon.classList.toggle('bi-moon-stars');
+    icon.classList.toggle('bi-sun');
+  });
+
+  // Generate Report with confirmation
+  document.getElementById('generateReportBtn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    showModal(
+      'Generate Report',
+      `<form id="reportForm">
+        <div class="mb-3">
+          <label class="form-label">Report Type</label>
+          <select class="form-select" id="reportType">
+            <option value="financial">Financial Report</option>
+            <option value="attendance">Attendance Report</option>
+            <option value="performance">Performance Report</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Date Range</label>
+          <select class="form-select" id="reportPeriod">
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month" selected>This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Format</label>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="format" id="formatExcel" value="excel" checked>
+            <label class="form-check-label" for="formatExcel">Excel</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="format" id="formatPDF" value="pdf">
+            <label class="form-check-label" for="formatPDF">PDF</label>
+          </div>
+        </div>
+      </form>`,
+      () => {
+        const format = document.querySelector('input[name="format"]:checked').value;
+        if (format === 'excel') {
+          window.location.href = '{% url "admin2_export_financial_excel" %}';
+        } else {
+          showModal('Export PDF', '<div class="alert alert-info">PDF export feature is coming soon.</div>');
+        }
+      }
+    );
+  });
+
+  // Initialize Bootstrap modals
+  const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
+  const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+  
+  // Helper function to show modal with custom content
+  const showModal = (title, body, confirmCallback = null) => {
+    const modal = document.getElementById('actionModal');
+    modal.querySelector('.modal-title').textContent = title;
+    modal.querySelector('.modal-body').innerHTML = body;
+    
+    const confirmBtn = modal.querySelector('#modalConfirmBtn');
+    if (confirmCallback) {
+      confirmBtn.style.display = '';
+      confirmBtn.onclick = () => {
+        confirmCallback();
+        actionModal.hide();
+      };
+    } else {
+      confirmBtn.style.display = 'none';
+    }
+    
+    actionModal.show();
+  };
+
+  // Export PDF
+  document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
+    showModal(
+      'Export PDF',
+      `<div class="mb-3">
+        <p>Choose export options:</p>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="includeCharts" checked>
+          <label class="form-check-label" for="includeCharts">Include Charts</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="includeStats" checked>
+          <label class="form-check-label" for="includeStats">Include Statistics</label>
+        </div>
+      </div>
+      <div class="alert alert-info">
+        PDF export feature is coming soon. Your preferences will be saved.
+      </div>`,
+      () => {
+        const includeCharts = document.getElementById('includeCharts').checked;
+        const includeStats = document.getElementById('includeStats').checked;
+        console.log('Export preferences saved:', { includeCharts, includeStats });
+      }
+    );
+  });
+
+  // Schedule Task
+  document.getElementById('scheduleTaskBtn')?.addEventListener('click', function() {
+    showModal(
+      'Schedule Task',
+      `<form id="scheduleForm">
+        <div class="mb-3">
+          <label class="form-label">Task Type</label>
+          <select class="form-select" id="taskType">
+            <option value="report">Generate Report</option>
+            <option value="backup">Database Backup</option>
+            <option value="notification">Send Notification</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Schedule Date</label>
+          <input type="datetime-local" class="form-control" id="scheduleDate">
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="recurring">
+          <label class="form-check-label" for="recurring">Recurring Task</label>
+        </div>
+        <div class="alert alert-info">
+          Task scheduling feature is coming soon. Your preferences will be saved.
+        </div>
+      </form>`,
+      () => {
+        const form = document.getElementById('scheduleForm');
+        console.log('Task scheduled:', {
+          type: form.querySelector('#taskType').value,
+          date: form.querySelector('#scheduleDate').value,
+          recurring: form.querySelector('#recurring').checked
+        });
+      }
+    );
+  });
+
+  // Bulk Actions
+  document.getElementById('bulkActionBtn')?.addEventListener('click', function() {
+    showModal(
+      'Bulk Actions',
+      `<div class="mb-3">
+        <div class="list-group">
+          <button type="button" class="list-group-item list-group-item-action">
+            <i class="bi bi-envelope"></i> Send Mass Email
+          </button>
+          <button type="button" class="list-group-item list-group-item-action">
+            <i class="bi bi-bell"></i> Send Bulk Notifications
+          </button>
+          <button type="button" class="list-group-item list-group-item-action">
+            <i class="bi bi-pencil"></i> Update Multiple Records
+          </button>
+          <button type="button" class="list-group-item list-group-item-action">
+            <i class="bi bi-archive"></i> Archive Selected Items
+          </button>
+        </div>
+        <div class="alert alert-info mt-3">
+          Bulk actions feature is coming soon. These options will be implemented shortly.
+        </div>
+      </div>`
+    );
+  });
+
+  // Search functionality
+  document.getElementById('searchInput')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    document.querySelectorAll('.activity-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+  });
+
+  // Apply Filters
+  document.getElementById('applyFilters')?.addEventListener('click', function() {
+    const category = document.getElementById('categoryFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    
+    console.log('Applying filters:', { category, status, dateFrom });
+    alert('Filters applied! Results will be updated.');
+  });
+
+  // Notification bell
+  document.getElementById('notificationBtn')?.addEventListener('click', function() {
+    notificationModal.show();
+    document.getElementById('notificationCount').textContent = '0';
+  });
+
+  // One Step Quick Guide for Admin2
+  function showOneStepGuideAdmin2() {
+    const guideHTML = `
+      <div class="modal fade" id="admin2OneStepModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+              <h5 class="modal-title fw-bold">
+                ⚡ Admin Quick Guide
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">1</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Manage Students</h6>
+                    <p class="text-muted mb-0">Add, edit, or remove student accounts and manage their enrollments.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">2</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Monitor Financial Records</h6>
+                    <p class="text-muted mb-0">Track fee payments, generate financial reports, and manage transactions.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">3</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Manage Staff</h6>
+                    <p class="text-muted mb-0">Add or remove staff members and manage their roles and permissions.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">4</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">View Attendance</h6>
+                    <p class="text-muted mb-0">Monitor student and staff attendance with real-time insights.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">5</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Send Notifications</h6>
+                    <p class="text-muted mb-0">Broadcast important notifications and announcements to users.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const existingModal = document.getElementById('admin2OneStepModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', guideHTML);
+    
+    const modal = new bootstrap.Modal(document.getElementById('admin2OneStepModal'));
+    modal.show();
+    
+    document.getElementById('admin2OneStepModal').addEventListener('hidden.bs.modal', function() {
+      this.remove();
+    });
+  }
+
+  // Mark All Notifications as Read for Admin2
+  function markAllNotificationsReadAdmin2() {
+    fetch('/notifications/mark-all-read/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('notificationCount').textContent = '0';
+        alert('✓ All notifications marked as read');
+      } else {
+        alert('Error marking notifications as read');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error marking notifications as read');
+    });
+  }
+})();

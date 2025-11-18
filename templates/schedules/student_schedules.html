@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Schedules & Events{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3">Upcoming Schedules & Events</h2>
+
+  {% if schedules %}
+    <div class="row g-3">
+      {% for s in schedules %}
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">{{ s.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ s.date }}{% if s.start_time %} • {{ s.start_time }}{% endif %}{% if s.end_time %} - {{ s.end_time }}{% endif %}</h6>
+            {% if s.course %}
+              <p class="mb-1"><strong>Course:</strong> {{ s.course.code }} - {{ s.course.name }}</p>
+            {% endif %}
+            <p class="card-text">{{ s.description|linebreaks }}</p>
+            {% if s.attachment %}
+              <a href="{{ s.attachment.url }}" class="btn btn-sm btn-outline-secondary" download>Attachment</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-4">
+      <h4 class="mb-2">No upcoming schedules</h4>
+      <p class="text-muted">Your teacher will post schedules and events here.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

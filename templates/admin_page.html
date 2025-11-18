@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Control Center - Xplore IT Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-4">Quick Actions</h4>
+                    <div class="list-group">
+                        <a href="{% url 'admin_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a href="{% url 'admin_ai_insights' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-brain me-2"></i> AI Insights
+                        </a>
+                        <a href="{% url 'superadmin_student_management' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-graduate me-2"></i> Student Management
+                        </a>
+                        <a href="{% url 'superadmin_staff_attendance' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-check me-2"></i> Staff Attendance
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- AI Features Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI-Powered Features</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-chart-line text-success me-2"></i>Performance Analytics</h5>
+                                    <p>AI-driven student performance predictions and insights.</p>
+                                    <a href="{% url 'admin_ai_insights' %}" class="btn btn-sm btn-outline-primary">View Analytics</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-face-smile text-warning me-2"></i>Sentiment Analysis</h5>
+                                    <p>Analyze student feedback and course satisfaction.</p>
+                                    <button class="btn btn-sm btn-outline-primary">View Insights</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-graduation-cap text-info me-2"></i>Course Recommendations</h5>
+                                    <p>AI-powered course suggestions for students.</p>
+                                    <button class="btn btn-sm btn-outline-primary">View Recommendations</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Quick Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="quick-stats-loading" class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div id="quick-stats-content" class="d-none">
+                                <!-- Stats will be loaded here via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recent-activity-loading" class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div id="recent-activity-content" class="d-none">
+                                <!-- Activity feed will be loaded here via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Advanced Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                <i class="fas fa-file-export me-2"></i>Export Data
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                <i class="fas fa-chart-pie me-2"></i>Generate Reports
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#backupModal">
+                                <i class="fas fa-database me-2"></i>Backup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Data Type</label>
+                        <select class="form-select">
+                            <option value="students">Students Data</option>
+                            <option value="courses">Courses Data</option>
+                            <option value="attendance">Attendance Records</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select class="form-select">
+                            <option value="excel">Excel</option>
+                            <option value="pdf">PDF</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Export</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load Quick Stats
+    fetch('/api/admin/quick-stats/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('quick-stats-loading').classList.add('d-none');
+            document.getElementById('quick-stats-content').classList.remove('d-none');
+            // Update stats here
+        });
+
+    // Load Recent Activity
+    fetch('/api/admin/recent-activity/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('recent-activity-loading').classList.add('d-none');
+            document.getElementById('recent-activity-content').classList.remove('d-none');
+            // Update activity feed here
+        });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

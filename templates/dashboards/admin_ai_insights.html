@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Insights{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h2 class="mb-4">AI Insights - Student Rankings</h2>
+        <div>
+            {% if model_status == 'trained' %}
+                <span class="badge bg-success">Trained model</span>
+            {% else %}
+                <span class="badge bg-secondary" title="Using deterministic heuristic fallback">Heuristic (fallback)</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Score</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in predictions %}
+                <tr>
+                    <td>{{ item.student.user.get_full_name|default:item.student.user.username }}</td>
+                    <td>{{ item.prediction.score }}%</td>
+                    <td>
+                        <span class="badge bg-{{ item.prediction.color }}">{{ item.prediction.category }}</span>
+                        {% if item.prediction.method == 'heuristic' %}
+                            <small class="text-muted ms-2">(heuristic)</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="d-flex gap-2">
+  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back();">Back</button>
+  <a class="btn btn-sm btn-outline-danger" href="{% url 'role_redirect' %}">Cancel</a>
+</div>
+
+{% endblock %}

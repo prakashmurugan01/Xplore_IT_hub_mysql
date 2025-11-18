@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - {{ course.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Assignments for {{ course.name }}</h1>
+        <div>
+            <a href="{% url 'render_create_assignment' %}" class="btn btn-primary">Create Assignment</a>
+            <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary">Back to Course</a>
+        </div>
+    </div>
+
+    <div class="list-group">
+        {% for a in assignments %}
+            <a href="{% url 'assignment_detail' a.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ a.title }}</strong>
+                        <div class="text-muted">Due: {{ a.due_date|default:'N/A' }}</div>
+                    </div>
+                    <div class="text-end">
+                        <small>Max: {{ a.max_marks|default:100 }}</small>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="text-center text-muted p-4">No assignments yet</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

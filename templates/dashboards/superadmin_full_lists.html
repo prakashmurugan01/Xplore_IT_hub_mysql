@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Users Lists{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #f1f5f9;
+  }
+  .dashboard-card {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+  }
+  .table th, .table td {
+    vertical-align: middle !important;
+  }
+  .form-control, .btn {
+    border-radius: 8px !important;
+  }
+  .btn-advanced {
+    background: linear-gradient(90deg, #06b6d4, #3b82f6);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+  }
+  .btn-advanced:hover {
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    transform: translateY(-2px);
+  }
+  .nav-tabs .nav-link {
+    color: #f1f5f9;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0 !important;
+  }
+  .nav-tabs .nav-link.active {
+    background: rgba(15, 23, 42, 0.7);
+    color: #fff;
+    font-weight: 600;
+  }
+  .table-dark {
+    background: transparent;
+  }
+  .page-link {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+  .page-item.disabled .page-link {
+    background: rgba(15, 23, 42, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(241, 245, 249, 0.5);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>All Users - Students / Staff / Teachers</h2>
+    <div>
+      <a class="btn btn-sm btn-secondary" href="{% url 'superadmin_dashboard' %}">Back</a>
+      <a class="btn btn-sm btn-success" href="?tab={{ tab }}&format=csv{% if q %}&q={{ q|urlencode }}{% endif %}{% if department %}&department={{ department|urlencode }}{% endif %}">Export CSV</a>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item"><a class="nav-link {% if tab == 'students' %}active{% endif %}" href="?tab=students">Students</a></li>
+      <li class="nav-item"><a class="nav-link {% if tab == 'staff' %}active{% endif %}" href="?tab=staff">Staff</a></li>
+      <li class="nav-item"><a class="nav-link {% if tab == 'teachers' %}active{% endif %}" href="?tab=teachers">Teachers</a></li>
+    </ul>
+  </div>
+
+  <!-- Search & Filter -->
+  <form method="get" class="row g-2 mb-3">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="🔍 Search by Name / ID / Phone">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="department" value="{{ department }}" class="form-control form-control-sm" placeholder="Department">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-sm btn-primary px-4">
+        <i class="fas fa-filter me-1"></i> Filter
+      </button>
+    </div>
+  </form>
+
+  <!-- Advanced Actions -->
+  {% if tab == 'students' %}
+  <div class="mb-3 d-flex justify-content-end gap-2">
+    <button id="export-selected-pdf" class="btn btn-sm btn-advanced">
+      <i class="fas fa-file-pdf me-1"></i> Export Selected PDF
+    </button>
+    <button id="export-selected-excel" class="btn btn-sm btn-advanced">
+      <i class="fas fa-file-excel me-1"></i> Export Selected Excel
+    </button>
+  </div>
+  {% endif %}
+
+  <div class="dashboard-card p-3">
+    <div class="table-responsive">
+      <table class="table table-dark table-striped table-hover table-sm align-middle">
+        <thead>
+          <tr>
+            {% if tab == 'students' %}
+              <th><input type="checkbox" id="select-all" class="form-check-input"></th>
+              <th>Student ID</th>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Department</th>
+              <th>Joined</th>
+            {% elif tab == 'staff' %}
+              <th>Staff ID</th>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Position</th>
+              <th>Joined</th>
+            {% else %}
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Joined</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in page_obj.object_list %}
+            {% if tab == 'students' %}
+              <tr>
+                <td><input type="checkbox" class="student-select form-check-input" value="{{ item.id }}"></td>
+                <td>{{ item.user.id }}</td>
+                <td>{{ item.user.username }}</td>
+                <td>{{ item.user.get_full_name }}</td>
+                <td>{{ item.user.email }}</td>
+                <td>{{ item.phone|default:'-' }}</td>
+                <td>{{ item.department }}</td>
+                <td>{{ item.user.date_joined|date:'Y-m-d' }}</td>
+              </tr>
+            {% elif tab == 'staff' %}
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.profile.user.username }}</td>
+                <td>{{ item.profile.user.get_full_name }}</td>
+                <td>{{ item.profile.department }}</td>
+                <td>{{ item.position }}</td>
+                <td>{{ item.profile.user.date_joined|date:'Y-m-d' }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td>{{ item.user.id }}</td>
+                <td>{{ item.user.username }}</td>
+                <td>{{ item.user.get_full_name }}</td>
+                <td>{{ item.user.email }}</td>
+                <td>{{ item.department }}</td>
+                <td>{{ item.user.date_joined|date:'Y-m-d' }}</td>
+              </tr>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4">
+                <div class="text-muted">
+                  <i class="fas fa-search mb-2 d-block" style="font-size: 2rem;"></i>
+                  No results found
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <nav aria-label="Pagination">
+      <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?tab={{ tab }}&page={{ page_obj.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if department %}&department={{ department|urlencode }}{% endif %}">Previous</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?tab={{ tab }}&page={{ page_obj.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if department %}&department={{ department|urlencode }}{% endif %}">Next</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<!-- Selection and Export JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectAll = document.getElementById('select-all');
+  const checkboxes = document.querySelectorAll('.student-select');
+  
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      checkboxes.forEach(cb => cb.checked = selectAll.checked);
+      updateSelectionStatus();
+    });
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updateSelectionStatus);
+    });
+  }
+
+  function updateSelectionStatus() {
+    const selected = getSelectedStudents();
+    const exportBtns = document.querySelectorAll('#export-selected-pdf, #export-selected-excel');
+    exportBtns.forEach(btn => {
+      if (selected.length > 0) {
+        btn.classList.remove('disabled');
+        btn.removeAttribute('disabled');
+      } else {
+        btn.classList.add('disabled');
+        btn.setAttribute('disabled', 'disabled');
+      }
+    });
+  }
+
+  function getSelectedStudents() {
+    return Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+  }
+
+  document.getElementById('export-selected-pdf')?.addEventListener('click', () => {
+    const selected = getSelectedStudents();
+    if (selected.length === 0) {
+      showToast('Please select at least one student!', 'warning');
+      return;
+    }
+    window.location.href = `{% url 'export_selected_students_pdf' %}?ids=${selected.join(',')}`;
+  });
+
+  document.getElementById('export-selected-excel')?.addEventListener('click', () => {
+    const selected = getSelectedStudents();
+    if (selected.length === 0) {
+      showToast('Please select at least one student!', 'warning');
+      return;
+    }
+    window.location.href = `{% url 'export_selected_students_excel' %}?ids=${selected.join(',')}`;
+  });
+
+  function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      background: ${type === 'warning' ? '#f59e0b' : '#3b82f6'};
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    `;
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s ease-out forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+});
+
+// Add animations to the stylesheet
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

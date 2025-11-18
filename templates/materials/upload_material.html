@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Material - {{ course.name|default:course.code }}{% endblock %}
+
+{% block content %}
+<style>
+    .upload-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 3rem 0;
+    }
+    
+    .upload-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .upload-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .upload-header h4 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.75rem;
+    }
+    
+    .upload-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.95;
+        font-size: 0.95rem;
+    }
+    
+    .upload-body {
+        padding: 2.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-control, .form-control:focus {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%);
+        border: 2px dashed #cbd5e0;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .file-upload-wrapper:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    }
+    
+    .file-upload-wrapper input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .file-upload-icon {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .file-upload-text {
+        color: #4a5568;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .file-upload-hint {
+        color: #718096;
+        font-size: 0.85rem;
+    }
+    
+    .file-name-display {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #e6fffa;
+        border-left: 4px solid #38b2ac;
+        border-radius: 8px;
+        color: #234e52;
+        font-weight: 500;
+        display: none;
+    }
+    
+    .btn-upload {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.85rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-upload:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #e2e8f0;
+        border: none;
+        padding: 0.85rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        color: #4a5568;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #cbd5e0;
+        color: #2d3748;
+    }
+    
+    .info-badge {
+        display: inline-block;
+        background: #eef2ff;
+        color: #5a67d8;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-top: 1rem;
+    }
+    
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    @media (max-width: 768px) {
+        .upload-container {
+            padding: 1.5rem 0;
+        }
+        
+        .upload-body {
+            padding: 1.5rem;
+        }
+        
+        .btn-group-responsive {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-group-responsive .btn {
+            width: 100%;
+            margin: 0.25rem 0 !important;
+        }
+    }
+</style>
+
+<div class="upload-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="upload-card">
+                    <div class="upload-header">
+                        <h4>
+                            <i class="fas fa-cloud-upload-alt me-2"></i>
+                            {% if admin_upload %}Admin Upload{% else %}Upload Material{% endif %}
+                        </h4>
+                        <p>{{ course.name|default:course.code }}</p>
+                    </div>
+                    
+                    <div class="upload-body">
+                        <form method="post" enctype="multipart/form-data" id="uploadForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="title" class="form-label">
+                                    <i class="fas fa-heading me-2"></i>Title
+                                </label>
+                                <input 
+                                    id="title" 
+                                    name="title" 
+                                    class="form-control" 
+                                    placeholder="Enter a descriptive title for this material"
+                                    required 
+                                />
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label">
+                                    <i class="fas fa-align-left me-2"></i>Description <span class="text-muted">(optional)</span>
+                                </label>
+                                <textarea 
+                                    id="description" 
+                                    name="description" 
+                                    rows="4" 
+                                    class="form-control"
+                                    placeholder="Add additional details about this material..."></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="file" class="form-label">
+                                    <i class="fas fa-file-upload me-2"></i>Upload File
+                                </label>
+                                <div class="file-upload-wrapper">
+                                    <input 
+                                        id="file" 
+                                        name="file" 
+                                        type="file" 
+                                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,video/*" 
+                                        required 
+                                    />
+                                    <div class="file-upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="file-upload-text">
+                                        Click to browse or drag and drop
+                                    </div>
+                                    <div class="file-upload-hint">
+                                        PDF, Word, PNG, JPG, MP4 • Documents/Images: 50MB max • Videos: 500MB max
+                                    </div>
+                                </div>
+                                <div class="file-name-display" id="fileNameDisplay">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    <span id="fileName"></span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap btn-group-responsive">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-upload" type="submit">
+                                        <i class="fas fa-upload me-2"></i>Upload Material
+                                    </button>
+                                    <a class="btn btn-cancel" href="{% if admin_upload %}{% url 'admin_dashboard' %}{% else %}{% url 'manage_materials' course.id %}{% endif %}">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                                <div class="info-badge d-none d-lg-inline-block">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Secure upload
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Display selected file name
+    document.getElementById('file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name;
+        if (fileName) {
+            document.getElementById('fileName').textContent = fileName;
+            document.getElementById('fileNameDisplay').style.display = 'block';
+        }
+    });
+    
+    // Drag and drop functionality
+    const fileUploadWrapper = document.querySelector('.file-upload-wrapper');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadWrapper.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        fileUploadWrapper.style.borderColor = '#667eea';
+        fileUploadWrapper.style.background = 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)';
+    }
+    
+    function unhighlight() {
+        fileUploadWrapper.style.borderColor = '#cbd5e0';
+        fileUploadWrapper.style.background = 'linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%)';
+    }
+    
+    fileUploadWrapper.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        document.getElementById('file').files = files;
+        
+        if (files[0]) {
+            document.getElementById('fileName').textContent = files[0].name;
+            document.getElementById('fileNameDisplay').style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

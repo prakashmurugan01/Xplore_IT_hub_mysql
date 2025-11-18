@@ -1,0 +1,915 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Superadmin Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* 🌙 Modern Glass Dashboard Theme */
+  body {
+    background: radial-gradient(circle at top left, #0f172a, #020617 60%);
+    color: #e2e8f0;
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+    transition: all 0.5s ease;
+  }
+
+  body.light-mode {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #0f172a;
+  }
+
+  .container {
+    animation: fadeIn 1.2s ease-in-out;
+  }
+
+  /* Dashboard Cards */
+  .dashboard-card {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s ease;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-6px);
+    border-color: #3b82f6;
+    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.25);
+  }
+
+  body.light-mode .dashboard-card {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+  }
+
+  /* Header Buttons */
+  .btn-outline-light,
+  .btn-primary {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-light:hover {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: white;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+  }
+
+  /* Theme Toggle Button */
+  #theme-toggle {
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    font-size: 1.2rem;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+
+  #theme-toggle:hover {
+    color: #3b82f6;
+    transform: rotate(15deg);
+  }
+
+  /* Titles */
+  h1, h5 {
+    color: #f8fafc;
+    letter-spacing: 0.5px;
+  }
+
+  body.light-mode h1,
+  body.light-mode h5 {
+    color: #1e293b;
+  }
+
+  /* Stat Boxes */
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #38bdf8;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  }
+
+  .stat-label {
+    color: #cbd5e1;
+    font-size: 0.95rem;
+  }
+
+  /* Table Styling */
+  .table-dark {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+  }
+
+  .table-dark th {
+    color: #93c5fd;
+  }
+
+  .table-dark td {
+    color: #e2e8f0;
+  }
+
+  .table-dark tbody tr:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transition: 0.3s;
+  }
+
+  /* Quick Actions */
+  .dashboard-card a.btn {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .dashboard-card a.btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+  }
+
+  /* Chart.js Canvas Container */
+  canvas {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  /* Attendance Counters */
+  .card.p-2 {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 10px;
+    color: #e2e8f0;
+    transition: 0.3s;
+  }
+
+  .card.p-2:hover {
+    background: rgba(59, 130, 246, 0.15);
+    transform: translateY(-3px);
+  }
+
+  /* Modal */
+  .modal-content {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.7);
+  }
+
+  /* Disabled state */
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Superadmin Dashboard</h1>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-info" onclick="showOneStepGuideSuperadmin()" title="One Step Guide">
+        <i class="fas fa-lightning"></i> One Step
+      </button>
+      <button class="btn btn-success" onclick="markAllNotificationsReadSuperadmin()" title="Mark All as Read">
+        <i class="fas fa-check-double"></i> Read
+      </button>
+      <button id="theme-toggle" title="Toggle Light/Dark Mode">
+        <i class="fas fa-moon"></i>
+      </button>
+      <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-light"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+      <a href="{% url 'admin2_staff' %}" class="btn btn-outline-light"><i class="fas fa-users"></i> Manage Staff</a>
+      <a href="{% url 'superadmin_staff_attendance' %}" class="btn btn-outline-light"><i class="fas fa-camera"></i> Staff Attendance</a>
+      <a href="{% url 'admin2_financial' %}" class="btn btn-outline-light"><i class="fas fa-chart-line"></i> Finance</a>
+      <a href="{% url 'admin2_notifications' %}" class="btn btn-outline-light"><i class="fas fa-bell"></i> Notifications</a>
+      <a href="{% url 'export_users_pdf' %}" class="btn btn-outline-light"><i class="fas fa-file-pdf"></i> Export Users</a>
+      <a href="{% url 'admin_ai_insights' %}" class="btn btn-outline-light"><i class="fas fa-robot"></i> AI Insights</a>
+      <button id="one-click-attendance" class="btn btn-success"><i class="fas fa-hand-pointer"></i> Mark Attendance Now</button>
+      <a href="{% url 'staff_attendance_marked' %}" class="btn btn-outline-light"><i class="fas fa-list"></i> Attendance Details</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_students" class="stat-number display-6">{{ total_students }}</div>
+        <div class="stat-label">Students</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_teachers" class="stat-number display-6">{{ total_teachers }}</div>
+        <div class="stat-label">Teachers</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_courses" class="stat-number display-6">{{ total_courses }}</div>
+        <div class="stat-label">Courses</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_other_count" class="stat-number display-6">{{ other_count }}</div>
+        <div class="stat-label">Other Users</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="dashboard-card p-3 mb-3">
+        <h5>Recent Registrations</h5>
+        <!-- Search & Filter -->
+        <form method="get" class="row g-2 mb-3">
+          <input type="hidden" name="tab" value="{{ tab }}">
+          <div class="col-md-4">
+            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="🔍 Search by Name / ID / Phone">
+          </div>
+          <div class="col-md-3">
+            <input type="text" name="department" value="{{ department }}" class="form-control form-control-sm" placeholder="Department">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-sm btn-primary px-4">
+              <i class="fas fa-filter me-1"></i> Filter
+            </button>
+          </div>
+        </form>
+        <table class="table table-dark table-striped mt-2">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="su_recent_users" data-report-url-template="{% url 'admin_download_student_report' 0 %}">
+            {% for u in recent_users %}
+            <tr data-user-id="{{ u.id }}">
+              <td>{{ u.username }}</td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.profile.role|default:'-' }}</td>
+              <td>{{ u.date_joined|date:'Y-m-d' }}</td>
+              <td><a class="btn btn-sm btn-light" href="{% url 'admin_download_student_report' u.id %}"><i class="fas fa-download"></i> Report</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dashboard-card p-3">
+        <h5>Signups (last 7 days)</h5>
+        <canvas id="signupsChart" height="120"></canvas>
+      </div>
+
+      <div class="dashboard-card p-3 mt-3">
+        <h5>Staff Attendance (Today)</h5>
+        <div class="d-flex gap-2 mb-3">
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Total Staff</div>
+            <div id="totalStaffCount" class="h4">0</div>
+          </div>
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Present</div>
+            <div id="presentCount" class="h4 text-success">0</div>
+          </div>
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Absent</div>
+            <div id="absentCount" class="h4 text-danger">0</div>
+          </div>
+        </div>
+
+        <div class="mb-2 d-flex gap-2 align-items-center">
+          <input id="attendanceDate" type="date" class="form-control form-control-sm" style="width:170px;" />
+          <input id="attendanceDept" type="text" placeholder="Department (optional)" class="form-control form-control-sm" style="width:200px;" />
+          <select id="historyDays" class="form-control form-control-sm" style="width:120px;">
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30">30 days</option>
+          </select>
+          <button id="attendanceRefresh" class="btn btn-sm btn-outline-light">Refresh</button>
+          <a id="attendanceExport" class="btn btn-sm btn-light" href="#">Export</a>
+        </div>
+
+        <div style="max-height:320px; overflow:auto;">
+          <table class="table table-sm table-dark table-striped">
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Dept</th>
+                <th>Position</th>
+                <th>Today</th>
+                <th>Last</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="dashboard-card p-3 mb-3">
+        <h5>Quick Actions</h5>
+        <a href="{% url 'superadmin_full_lists' %}" class="btn btn-primary w-100 mb-2"><i class="fas fa-list-alt me-2"></i> Full Lists</a>
+        <a href="{% url 'superadmin_student_management' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-users me-2"></i> Student Management</a>
+        <a href="{% url 'admin2_staff' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-users me-2"></i> Manage Staff</a>
+        <a href="{% url 'superadmin_staff_attendance' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-camera me-2"></i> Staff Attendance</a>
+        <a href="{% url 'admin2_financial' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-chart-line me-2"></i> Finance</a>
+        <a href="{% url 'admin2_notifications' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-bell me-2"></i> Notifications</a>
+        <a href="{% url 'export_users_pdf' %}" class="btn btn-outline-light w-100"><i class="fas fa-file-export me-2"></i> Export Users</a>
+        <a href="{% url 'admin_page' %}" class="btn btn-outline-light w-100 mt-2"><i class="fas fa-user-cog me-2"></i> Admin Page</a>
+      </div>
+
+      <div class="dashboard-card p-3">
+        <h5>Recent Alerts</h5>
+        <ul class="list-group list-group-flush mt-2">
+          <li class="list-group-item bg-transparent border-0 text-light">No critical alerts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+{{ signup_labels|json_script:'signup-labels-json' }}
+{{ signup_counts|json_script:'signup-counts-json' }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============================================
+  // UTILITY FUNCTIONS
+  // ============================================
+  
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '`': '&#x60;'
+    };
+    return String(text).replace(/[&<>"'`]/g, char => map[char]);
+  }
+
+  function getCSRFToken() {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+    return cookie ? cookie.split('=')[1] : '';
+  }
+
+  function showToast(message, type = 'info') {
+    // Simple toast notification (you can replace with Bootstrap toast or custom)
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+    const toast = document.createElement('div');
+    toast.className = `alert ${alertClass} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ============================================
+  // THEME TOGGLE
+  // ============================================
+  
+  function initThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (!toggleBtn) return;
+
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'light') {
+      document.body.classList.add('light-mode');
+      toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      toggleBtn.innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+  }
+
+  // ============================================
+  // CHART INITIALIZATION
+  // ============================================
+  
+  function initChart() {
+    const labels = JSON.parse(document.getElementById('signup-labels-json')?.textContent || '[]');
+    const data = JSON.parse(document.getElementById('signup-counts-json')?.textContent || '[]');
+    const ctx = document.getElementById('signupsChart')?.getContext('2d');
+    
+    if (!ctx) return null;
+
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Signups',
+          data: data,
+          backgroundColor: '#4F46E5',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // ============================================
+  // DASHBOARD UPDATES
+  // ============================================
+  
+  class DashboardUpdater {
+    constructor(chart) {
+      this.chart = chart;
+      this.intervalId = null;
+      this.isUpdating = false;
+    }
+
+    async fetchUpdates() {
+      if (this.isUpdating) return;
+      
+      this.isUpdating = true;
+      try {
+        const res = await fetch('{% url "superadmin_updates" %}');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        this.updateStats(data);
+        this.updateRecentUsers(data.recent_users || []);
+        this.updateChart(data);
+      } catch (error) {
+        console.warn('Dashboard updates failed:', error);
+      } finally {
+        this.isUpdating = false;
+      }
+    }
+
+    updateStats(data) {
+      const stats = {
+        su_total_students: data.total_students,
+        su_total_teachers: data.total_teachers,
+        su_total_courses: data.total_courses,
+        su_other_count: data.other_count
+      };
+
+      Object.entries(stats).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      });
+    }
+
+    updateRecentUsers(users) {
+      const tbody = document.getElementById('su_recent_users');
+      if (!tbody) return;
+
+      const reportTemplate = tbody.dataset.reportUrlTemplate || '/superadmin/download-report/0/';
+      tbody.innerHTML = '';
+
+      users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-user-id', user.id);
+        const reportUrl = reportTemplate.replace('/0/', `/${user.id}/`);
+        
+        tr.innerHTML = `
+          <td>${escapeHtml(user.username)}</td>
+          <td>${escapeHtml(user.email)}</td>
+          <td>${escapeHtml(user.role)}</td>
+          <td>${escapeHtml(user.joined)}</td>
+          <td>
+            <a class="btn btn-sm btn-light" href="${reportUrl}">
+              <i class="fas fa-download"></i> Report
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    updateChart(data) {
+      if (!this.chart) return;
+      
+      this.chart.data.labels = data.signup_labels || [];
+      this.chart.data.datasets[0].data = data.signup_counts || [];
+      this.chart.update();
+    }
+
+    start() {
+      this.fetchUpdates();
+      this.intervalId = setInterval(() => this.fetchUpdates(), 10000);
+    }
+
+    stop() {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+    }
+  }
+
+  // ============================================
+  // ATTENDANCE MANAGER
+  // ============================================
+  
+  class AttendanceManager {
+    constructor() {
+      this.dateInput = document.getElementById('attendanceDate');
+      this.deptInput = document.getElementById('attendanceDept');
+      this.historySelect = document.getElementById('historyDays');
+      this.tbody = document.getElementById('attendanceBody');
+      this.totalEl = document.getElementById('totalStaffCount');
+      this.presentEl = document.getElementById('presentCount');
+      this.absentEl = document.getElementById('absentCount');
+      this.exportLink = document.getElementById('attendanceExport');
+      this.refreshBtn = document.getElementById('attendanceRefresh');
+      this.currentRecords = [];
+      
+      this.init();
+    }
+
+    init() {
+      if (this.dateInput) {
+        this.dateInput.value = new Date().toISOString().slice(0, 10);
+      }
+
+      if (this.refreshBtn) {
+        this.refreshBtn.addEventListener('click', () => this.fetch());
+      }
+
+      // Delegate click for view details
+      document.body.addEventListener('click', (e) => {
+        if (e.target.closest('.view-details')) {
+          const btn = e.target.closest('.view-details');
+          this.showDetails(btn.dataset.staff);
+        }
+      });
+
+      this.fetch();
+    }
+
+    async fetch() {
+      try {
+        const params = new URLSearchParams();
+        if (this.dateInput?.value) params.set('date', this.dateInput.value);
+        if (this.deptInput?.value) params.set('department', this.deptInput.value);
+        if (this.historySelect?.value) params.set('days', this.historySelect.value);
+
+        const res = await fetch('{% url "admin2_attendance_list" %}?' + params.toString());
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        this.currentRecords = data.records || [];
+        this.render();
+        this.updateExportLink(params);
+      } catch (error) {
+        console.error('Attendance fetch failed:', error);
+        showToast('Failed to load attendance data', 'error');
+      }
+    }
+
+    render() {
+      const present = this.currentRecords.filter(r => r.status === 'present').length;
+      const absent = this.currentRecords.filter(r => r.status === 'absent').length;
+
+      if (this.totalEl) this.totalEl.textContent = this.currentRecords.length;
+      if (this.presentEl) this.presentEl.textContent = present;
+      if (this.absentEl) this.absentEl.textContent = absent;
+
+      if (!this.tbody) return;
+      
+      this.tbody.innerHTML = '';
+      this.currentRecords.forEach(record => {
+        const tr = document.createElement('tr');
+        const photoHtml = record.photo_url 
+          ? `<img src="${escapeHtml(record.photo_url)}" style="width:36px; height:36px; object-fit:cover; border-radius:50%; margin-right:8px;" alt="Photo">` 
+          : '';
+        
+        const statusClass = record.status === 'present' ? 'text-success' : 'text-danger';
+        const lastAttendance = record.last_attendance 
+          ? new Date(record.last_attendance).toLocaleString() 
+          : '-';
+
+        tr.innerHTML = `
+          <td>
+            ${photoHtml}
+            <strong>${escapeHtml(record.full_name || record.username)}</strong>
+            <div class="small text-muted">${escapeHtml(record.username)}</div>
+          </td>
+          <td>${escapeHtml(record.department)}</td>
+          <td>${escapeHtml(record.position)}</td>
+          <td class="${statusClass}">${escapeHtml(record.status)}</td>
+          <td>${escapeHtml(lastAttendance)}</td>
+          <td>
+            <button class="btn btn-sm btn-light view-details" data-staff="${record.staff_id}">
+              Details
+            </button>
+          </td>
+        `;
+        this.tbody.appendChild(tr);
+      });
+    }
+
+    updateExportLink(params) {
+      if (this.exportLink) {
+        this.exportLink.href = '{% url "admin2_export_attendance" %}?' + params.toString();
+      }
+    }
+
+    async showDetails(staffId) {
+      try {
+        const date = this.dateInput?.value || '';
+        const days = this.historySelect?.value || '7';
+        const params = new URLSearchParams({ date, days, staff_id: staffId });
+
+        const res = await fetch('{% url "admin2_attendance_list" %}?' + params.toString());
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        const record = (data.records || [])[0];
+        
+        if (!record) {
+          showToast('Details not found', 'error');
+          return;
+        }
+
+        let message = `Name: ${record.full_name || record.username}\n`;
+        message += `Department: ${record.department}\n`;
+        message += `Position: ${record.position}\n`;
+        message += `Today: ${record.status}\n`;
+        message += `Last: ${record.last_attendance || '-'}\n\n`;
+        message += `Recent History:\n`;
+        
+        for (let i = 0; i < record.history_dates.length; i++) {
+          message += `${record.history_dates[i]}: ${record.history[i] || '-'}\n`;
+        }
+
+        alert(message);
+      } catch (error) {
+        console.error('Failed to fetch details:', error);
+        showToast('Failed to load attendance details', 'error');
+      }
+    }
+  }
+
+  // ============================================
+  // ONE-CLICK ATTENDANCE
+  // ============================================
+  
+  class OneClickAttendance {
+    constructor(updater) {
+      this.btn = document.getElementById('one-click-attendance');
+      this.updater = updater;
+      this.init();
+    }
+
+    init() {
+      if (!this.btn) return;
+      
+      this.btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.markAttendance();
+      });
+    }
+
+    async markAttendance() {
+      if (!confirm('Mark attendance now for today using existing check-ins? This will update daily attendance for all staff. Proceed?')) {
+        return;
+      }
+
+      this.btn.disabled = true;
+      const originalText = this.btn.innerHTML;
+      this.btn.innerHTML = '<span class="spinner"></span> Marking...';
+
+      try {
+        const res = await fetch('{% url "one_click_attendance" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          const message = `Attendance marked successfully!\nPresent: ${data.summary.present} | Absent: ${data.summary.absent}`;
+          showToast(message, 'success');
+          
+          // Refresh dashboard and attendance
+          if (this.updater) {
+            this.updater.fetchUpdates();
+          }
+        } else {
+          showToast('Attendance marking failed', 'error');
+        }
+      } catch (error) {
+        console.error('Failed to mark attendance:', error);
+        showToast('Failed to mark attendance', 'error');
+      } finally {
+        this.btn.disabled = false;
+        this.btn.innerHTML = originalText;
+      }
+    }
+  }
+
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize theme toggle
+    initThemeToggle();
+
+    // Initialize chart
+    const chart = initChart();
+
+    // Initialize dashboard updater
+    const dashboardUpdater = new DashboardUpdater(chart);
+    dashboardUpdater.start();
+
+    // Initialize attendance manager
+    const attendanceManager = new AttendanceManager();
+
+    // Initialize one-click attendance
+    const oneClickAttendance = new OneClickAttendance(dashboardUpdater);
+
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      dashboardUpdater.stop();
+    });
+  });
+
+  // One Step Quick Guide for Superadmin
+  function showOneStepGuideSuperadmin() {
+    const guideHTML = `
+      <div class="modal fade" id="superadminOneStepModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+              <h5 class="modal-title fw-bold">
+                ⚡ Superadmin Quick Guide
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">1</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">System Overview</h6>
+                    <p class="text-muted mb-0">View complete system statistics including total students, teachers, and courses.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">2</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Manage All Users</h6>
+                    <p class="text-muted mb-0">Add, edit, or remove any user account including students, teachers, and staff.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">3</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Financial Management</h6>
+                    <p class="text-muted mb-0">Monitor all financial transactions, generate revenue reports, and manage payments.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item mb-4">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">4</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">System Analytics</h6>
+                    <p class="text-muted mb-0">Access AI-powered insights and analytics for system performance monitoring.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="badge bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">5</div>
+                  <div>
+                    <h6 class="fw-bold mb-2">Quick Actions</h6>
+                    <p class="text-muted mb-0">Use one-click attendance marking and bulk operations for efficient management.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    const existingModal = document.getElementById('superadminOneStepModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', guideHTML);
+    
+    const modal = new bootstrap.Modal(document.getElementById('superadminOneStepModal'));
+    modal.show();
+    
+    document.getElementById('superadminOneStepModal').addEventListener('hidden.bs.modal', function() {
+      this.remove();
+    });
+  }
+
+  // Mark All Notifications as Read for Superadmin
+  function markAllNotificationsReadSuperadmin() {
+    fetch('/notifications/mark-all-read/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast('✓ All notifications marked as read', 'success');
+      } else {
+        showToast('Error marking notifications as read', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('Error marking notifications as read', 'error');
+    });
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Profile — {{ name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        {% if photo_url %}
+        <img src="{{ photo_url }}" alt="{{ name }}" class="card-img-top" style="object-fit:cover;height:320px;" loading="lazy">
+        {% else %}
+        <img src="https://ui-avatars.com/api/?name={{ name|urlencode }}&size=600&background=0D6EFD&color=fff" alt="{{ name }}" class="card-img-top" style="object-fit:cover;height:320px;" loading="lazy">
+        {% endif %}
+        <div class="card-body">
+          <h3 class="h5 mb-1">{{ name }}</h3>
+          <p class="text-muted mb-2">{{ role }}</p>
+          <p class="mb-0"><strong>Experience:</strong> {{ experience }}</p>
+          <p class="mb-0"><strong>Skills:</strong> {{ skills }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card p-4 shadow-sm">
+        <h4>About</h4>
+        <p class="text-secondary">{{ bio }}</p>
+        <hr>
+        <p><strong>Contact:</strong> <a href="mailto:{{ email }}">{{ email }}</a></p>
+        <a href="{% url 'python_full_stack' %}" class="btn btn-outline-primary mt-3">Back to course</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

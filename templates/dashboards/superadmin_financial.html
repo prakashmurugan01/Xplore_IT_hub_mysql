@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Overview{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2>Financial Overview (Superadmin)</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Admin Dashboard</a>
+  </div>
+  <p>Placeholder for fee structure, balance renderer, invoices, and monthly charts.</p>
+
+  <div id="chart-container">
+    <p>Months: {{ months }}</p>
+    <p>Income: {{ income }}</p>
+    <p>Expenses: {{ expenses }}</p>
+  </div>
+
+  <a class="btn btn-primary" href="#">Manage Fee Structures</a>
+</div>
+{% endblock %}

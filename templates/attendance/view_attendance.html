@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">
+        <i class="fas fa-calendar-check"></i> My Attendance Record
+    </h2>
+    
+    <div class="row">
+        {% for data in attendance_data %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5>{{ data.course.name }}</h5>
+                    <small>{{ data.course.code }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar {% if data.percentage >= 75 %}bg-success{% elif data.percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" data-percentage="{{ data.percentage }}">{{ data.percentage }}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ data.total }}</h4>
+                            <small>Total Classes</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ data.present }}</h4>
+                            <small>Present</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-danger">{{ data.absent }}</h4>
+                            <small>Absent</small>
+                        </div>
+                    </div>
+                    
+                    {% if data.percentage < 75 %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Low attendance! Minimum required: 75%
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Set progress bar widths from data-percentage attributes (avoids template injection into style attr)
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.progress-bar[data-percentage]').forEach(function(el){
+        var pct = el.getAttribute('data-percentage') || '0';
+        el.style.width = pct + '%';
+    });
+});
+</script>
+{% endblock %}

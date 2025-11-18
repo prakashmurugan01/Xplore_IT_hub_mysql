@@ -1,0 +1,88 @@
+/* Analytics Section Styles */
+.dashboard-card {
+    background: var(--bs-body-bg);
+    border-radius: 1rem;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-heading-color);
+}
+
+/* Study Metrics Card */
+.study-metrics {
+    font-size: 0.9rem;
+}
+
+/* Learning Style Chart */
+.learning-style-chart {
+    height: 150px;
+    position: relative;
+}
+
+/* AI Tips */
+.tip-item {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tip-item:not(:last-child) {
+    margin-bottom: 0.75rem;
+}
+
+/* Achievement Grid */
+.achievement-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.achievement-item:hover {
+    transform: translateY(-2px);
+}
+
+.achievement-item i {
+    opacity: 0.9;
+}
+
+.smaller {
+    font-size: 0.75rem;
+}
+
+/* Timer Section */
+#timerDisplay {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--bs-heading-color);
+}
+
+/* Card Hover Effects */
+.dashboard-card [class*="bg-opacity-10"]:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1rem;
+    }
+    
+    #timerDisplay {
+        font-size: 2rem;
+    }
+    
+    .achievement-grid {
+        font-size: 0.9rem;
+    }
+}

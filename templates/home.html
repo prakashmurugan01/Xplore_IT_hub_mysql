@@ -1,0 +1,378 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="XPLORE IT CORP - Leading educational solutions provider offering Python Full Stack, Data Science, AI, Cloud Computing, and Cybersecurity courses in Coimbatore, Tamil Nadu." />
+  <meta name="keywords" content="IT training, Python course, Data Science, AI learning, Cloud Computing, Coimbatore" />
+  <meta property="og:title" content="XPLORE IT CORP - Educational Solutions" />
+  <meta property="og:description" content="12 years of proven expertise in comprehensive IT training" />
+  <meta property="og:type" content="website" />
+  <title>XPLORE IT CORP - Educational Solutions</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script src="{% static 'js/home.js' %}" defer></script>
+</head>
+
+<body>
+
+  <!-- AI Chatbot -->
+  <button class="ai-chatbot-btn" id="aiChatBtn" aria-label="Open AI Chat Assistant">
+    <i class="fas fa-robot"></i>
+  </button>
+
+  <div class="ai-chat-window" id="aiChatWindow" role="dialog" aria-labelledby="chatTitle">
+    <div class="chat-header">
+      <h4 id="chatTitle"><i class="fas fa-robot"></i> AI Assistant</h4>
+      <button class="close-chat" id="closeChat" aria-label="Close chat">&times;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
+      <div class="message bot">
+        <div class="bot-avatar" aria-hidden="true">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+          👋 Hello! I'm your AI learning assistant. I can help you with:<br>
+          • Course recommendations<br>
+          • Learning paths<br>
+          • Enrollment information<br>
+          • Tech career guidance<br><br>
+          What would you like to know?
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type your message..." aria-label="Chat message input">
+      <button class="send-btn" id="sendBtn" aria-label="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modern Navbar -->
+  <nav class="navbar-modern" id="navbar">
+    <div class="navbar-container">
+  <a href="{% url 'home' %}" class="brand-section">
+        <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/XIC-logo-1.webp" alt="XPLORE IT CORP Logo" class="brand-logo" width="55" height="55" />
+        <div class="brand-text">
+          <div class="brand-title">XPLORE IT CORP</div>
+          <div class="brand-subtitle">Educational Solutions Entity</div>
+        </div>
+      </a>
+
+      <ul class="nav-menu" id="navMenu">
+        <li class="nav-item">
+          <a href="#" class="nav-link active">
+            <i class="fas fa-home"></i> Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'about' %}" class="nav-link">
+            <i class="fas fa-info-circle"></i> About Us
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#courses" class="nav-link">
+            <span><i class="fas fa-book"></i> Courses</span>
+            <i class="fas fa-chevron-down"></i>
+          </a>
+          <div class="dropdown-menu-custom">
+            <a href="{% url 'python_full_stack' %}" class="dropdown-item-custom">
+              <i class="fab fa-python"></i> Python Full Stack
+            </a>
+            <a href="#java-fullstack" class="dropdown-item-custom">
+              <i class="fab fa-java"></i> Java Full Stack
+            </a>
+            <a href="#data-science" class="dropdown-item-custom">
+              <i class="fas fa-chart-line"></i> Data Science
+            </a>
+            <a href="#ai-ml" class="dropdown-item-custom">
+              <i class="fas fa-brain"></i> Artificial Intelligence
+            </a>
+            <a href="#cloud" class="dropdown-item-custom">
+              <i class="fas fa-cloud"></i> Cloud Computing
+            </a>
+            <a href="#cybersecurity" class="dropdown-item-custom">
+              <i class="fas fa-shield-alt"></i> Cybersecurity
+            </a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'choose' %}#contact" class="nav-link">
+            <i class="fas fa-envelope"></i> Contact Us
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'login' %}" class="nav-link">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+        </li>
+      </ul>
+
+      <div class="social-section">
+        <a href="https://www.facebook.com/xploreitcorp" class="social-icon facebook" title="Facebook" target="_blank" rel="noopener">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://www.instagram.com/xploreitcorp/" class="social-icon instagram" title="Instagram" target="_blank" rel="noopener">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.youtube.com/xploreitcorp" class="social-icon youtube" title="YouTube" target="_blank" rel="noopener">
+          <i class="fab fa-youtube"></i>
+        </a>
+        <a href="https://www.linkedin.com/company/xploreitcorp" class="social-icon linkedin" title="LinkedIn" target="_blank" rel="noopener">
+          <i class="fab fa-linkedin"></i>
+        </a>
+      </div>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle mobile menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section with Particles + high-quality font (Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <section class="hero-section" style="position:relative;overflow:hidden;min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 1rem;font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial,sans-serif;">
+    <canvas id="particles-canvas" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;"></canvas>
+    <div style="position:relative;z-index:1;color:#072146;">
+      <h1 style="margin:0;font-weight:800;font-size:clamp(2rem,5vw,3.25rem);letter-spacing:-0.02em;">WELCOME TO XPLORE IT CORP</h1>
+      <p style="margin-top:.75rem;font-weight:600;font-size:clamp(1rem,2.2vw,1.125rem);color:#334155;">Your gateway to quality educational solutions and professional development</p>
+      <a href="#courses" class="btn btn-primary mt-3" style="font-weight:600;padding:.6rem 1.1rem;border-radius:.5rem;">Explore Courses</a>
+    </div>
+  </section>
+
+  <!-- Carousel Section -->
+  <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active" data-bs-interval="5000">
+        <img src="https://wallpapercave.com/wp/wp9641888.jpg" class="d-block w-100" alt="Python full-stack development course banner" width="1200" height="500">
+        <div class="carousel-caption d-none d-md-block">
+          <h5>Python Full-Stack Developer</h5>
+          <p>Python full-stack developers in India are in high demand, especially those skilled in frameworks like Django or Flask for backend and React or Next.js for frontend. Entry-level roles typically offer ₹4–6 LPA, while mid-level professionals earn ₹7–12 LPA, and senior developers can command ₹15–23+ LPA.</p>
+        </div>
+      </div>
+      <div class="carousel-item" data-bs-interval="5000">
+        <img src="https://wallpapercave.com/wp/wp10474417.jpg" class="d-block w-100" alt="AWS cloud computing course banner" width="1200" height="500">
+        <div class="carousel-caption d-none d-md-block">
+          <h5>AWS Cloud Computing</h5>
+          <p>AWS specialists in India are highly valued, with salaries ranging from ₹6–10 LPA for entry-level cloud engineers, ₹12–20 LPA for mid-level DevOps or cloud architects, and ₹25–35+ LPA for senior cloud consultants. Master EC2, S3, Lambda, RDS, and CloudFormation.</p>
+        </div>
+      </div>
+      <div class="carousel-item" data-bs-interval="5000">
+        <img src="https://wallpapercave.com/wp/wp9922684.jpg" class="d-block w-100" alt="Java full-stack development course banner" width="1200" height="500">
+        <div class="carousel-caption d-none d-md-block">
+          <h5>Java Full-Stack Development</h5>
+          <p>Java full-stack developers are in high demand across enterprise and fintech sectors. Work with Spring Boot for backend and React or Angular for frontend. Entry-level salaries range from ₹5–8 LPA, mid-level ₹10–18 LPA, and senior engineers ₹20–35+ LPA.</p>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+
+  <!-- Featured Programs -->
+  <section class="container my-5" id="courses">
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <h2 class="section-title mb-0">Featured Programs</h2>
+      <a href="{% url 'courses_full' %}" class="btn btn-outline-primary btn-sm align-self-start">View all courses</a>
+    </div>
+    <div class="row g-4">
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card" id="python-fullstack">
+          <div class="skill-indicator">🔥 Trending</div>
+          <img src="https://miro.medium.com/v2/resize:fit:1200/1*0wEBx6BBP0N_LE5wnNSnfg.jpeg" class="card-img-top" alt="Python Full Stack Development course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">Python Full Stack</h3>
+            <p class="card-text">Master HTML, CSS, JavaScript, Python, MySQL, REST APIs, and Django framework to build scalable full-stack web applications.</p>
+            <a href="{% url 'python_full_stack' %}" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card" id="data-science">
+          <div class="skill-indicator">⭐ Popular</div>
+          <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop" class="card-img-top" alt="Data Science course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">Data Science</h3>
+            <p class="card-text">Learn Python, statistics, and machine learning to analyze and visualize data. Transform raw data into actionable insights.</p>
+            <a href="#data-science" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card" id="cybersecurity">
+          <div class="skill-indicator">🛡️ In-Demand</div>
+          <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&h=300&fit=crop" class="card-img-top" alt="Cybersecurity course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">Cybersecurity</h3>
+            <p class="card-text">Protect systems and networks with ethical hacking, cryptography, and risk management. Become a security expert.</p>
+            <a href="#cybersecurity" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card" id="cloud">
+          <div class="skill-indicator">☁️ Future-Ready</div>
+          <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&h=300&fit=crop" class="card-img-top" alt="Cloud Computing course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">Cloud Computing</h3>
+            <p class="card-text">Deploy scalable applications using AWS, Azure, and DevOps tools. Master the cloud infrastructure of tomorrow.</p>
+            <a href="#cloud" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card" id="ai-ml">
+          <div class="skill-indicator">🤖 AI-Powered</div>
+          <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop" class="card-img-top" alt="AI and Machine Learning course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">AI & Machine Learning</h3>
+            <p class="card-text">Build intelligent systems with deep learning and neural networks. Create the future of artificial intelligence.</p>
+            <a href="#ai-ml" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card">
+          <div class="skill-indicator">📱 Mobile First</div>
+          <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500&h=300&fit=crop" class="card-img-top" alt="Mobile App Development course" width="400" height="220" loading="lazy">
+          <div class="card-body">
+            <h3 class="card-title">Mobile App Development</h3>
+            <p class="card-text">Create engaging mobile apps for Android and iOS using Flutter and React Native. Build apps millions will use.</p>
+            <a href="#mobile-dev" class="btn btn-success">Explore Course</a>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </section>
+  <!-- Thirukkural Quote Section -->
+  <section class="container my-5">
+    <div class="row align-items-center g-4 p-4 shadow rounded" style="background:#f9fafb;">
+      
+      <div class="col-lg-6 text-center">
+        <img src="https://d1uy1wopdv0whp.cloudfront.net/newsimages/news_102025/1760373800245_1173-normal-WIFI.webp"
+             alt="Thirukkural Learning Quote"
+             class="img-fluid rounded"
+             style="max-height:350px; object-fit:cover;">
+      </div>
+
+      <div class="col-lg-6">
+        <h2 class="fw-bold mb-3" style="color:#0b5ed7;">
+          📘 திருக்குறள் – கல்வி சிறப்பு
+        </h2>
+        <p class="fs-4" style="line-height:1.6; font-weight:600;">
+          “கற்க கசடறக் கற்பவை கற்றபின்  
+          நிற்க அதற்குத் தக.”
+        </p>
+
+        <p class="fs-5 text-muted">
+          அர்த்தம்: எதை கற்றாலும் கசடறக் (தெளிவாக, முழுமையாக) கற்றுக்கொள்ள வேண்டும்.  
+          கற்றதை நடைமுறையில் நிறைவேற்றும் பண்பும் இருக்க வேண்டும்.
+        </p>
+
+        <a href="{% url 'about' %}" class="btn btn-primary px-4 py-2">
+          Learn With XPLORE IT CORP
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <h4 class="footer-title">Xplore IT Corp</h4>
+          <p class="footer-text">
+            With 12 years of proven expertise, Xplore IT Corp delivers comprehensive IT courses, empowering students to excel in real-world tech careers.
+          </p>
+          <div class="social-section">
+            <a href="https://www.facebook.com/xploreitcorp" class="social-icon facebook" title="Facebook" target="_blank" rel="noopener">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://www.instagram.com/xploreitcorp/" class="social-icon instagram" title="Instagram" target="_blank" rel="noopener">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.youtube.com/xploreitcorp" class="social-icon youtube" title="YouTube" target="_blank" rel="noopener">
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/xploreitcorp" class="social-icon linkedin" title="LinkedIn" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-subtitle">Address</h5>
+          <p class="footer-text">
+            No 18, 2nd Floor, Rani Complex, Kalingarayan Street, Ramnagar, Behind Central Bus Stand, Coimbatore,<br>
+            Tamil Nadu - 641 009
+          </p>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-subtitle">Contact</h5>
+          <a href="https://www.xploreitcorp.com" target="_blank" rel="noopener" class="footer-link">
+            <div class="footer-icon-box">
+              <i class="fas fa-globe"></i>
+            </div>
+            <span>www.xploreitcorp.com</span>
+          </a>
+          <a href="mailto:info@xploreitcorp.com" class="footer-link">
+            <div class="footer-icon-box">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <span>info@xploreitcorp.com</span>
+          </a>
+          <a href="tel:+919047020807" class="footer-link">
+            <div class="footer-icon-box">
+              <i class="fas fa-phone"></i>
+            </div>
+            <span>+91 90470 20807</span>
+          </a>
+          <a href="tel:+919047010807" class="footer-link">
+            <div class="footer-icon-box">
+              <i class="fas fa-phone"></i>
+            </div>
+            <span>+91 90470 10807</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          Copyrights©2025 | All rights reserved by Xplore IT Corp. Designed by Xplore Intellects.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/home.js' %}"></script>
+</body>
+
+</html> 

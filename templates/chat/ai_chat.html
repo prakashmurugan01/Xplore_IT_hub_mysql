@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Chat{% endblock %}
+
+{% block content %}
+<style>
+.chat-container { max-width: 900px; margin: 24px auto; background: #0f1114; padding: 20px; border-radius: 12px; color: #e6e6e6; }
+.chat-window { height: 400px; overflow:auto; border-radius: 8px; padding: 12px; background: #0b0c0e; border: 1px solid #222; }
+.chat-message { margin-bottom: 12px; }
+.chat-message.user { text-align: right; }
+.chat-message .bubble { display:inline-block; padding: 10px 14px; border-radius: 12px; max-width: 78%; }
+.chat-message.user .bubble { background: linear-gradient(90deg,#0a5cff, #002b8f); color: #fff; }
+.chat-message.ai .bubble { background: #111214; color: #dcdcdc; border: 1px solid #222; }
+.chat-bottom { display:flex; gap:8px; margin-top:12px; }
+.chat-bottom textarea { flex:1; min-height:48px; padding:8px; border-radius:8px; background:#0b0c0e; color:#fff; border:1px solid #222; }
+.chat-bottom button { padding:10px 14px; border-radius:8px; background: #0a5cff; color:#fff; border:none; cursor:pointer; }
+.broadcast-row { margin-top:8px; display:flex; gap:8px; align-items:center; }
+.broadcast-row select, .broadcast-row input[type=checkbox] { background:#0b0c0e; color:#fff; border:1px solid #222; padding:6px; border-radius:6px; }
+</style>
+
+<div class="chat-container">
+    <h2>AI Teaching Assistant</h2>
+    <p style="color:#bdbdbd;">Ask the AI for help, or generate messages to broadcast to students. (If OPENAI_API_KEY is set the assistant will be more advanced.)</p>
+
+    <div id="chatWindow" class="chat-window"></div>
+
+    <div class="chat-bottom">
+        <textarea id="chatInput" placeholder="Type your question or prompt here..."></textarea>
+        <button id="sendBtn">Send</button>
+    </div>
+
+    <div class="broadcast-row">
+        <label><input type="checkbox" id="broadcastToggle"> Broadcast reply to students</label>
+        {% if courses %}
+        <label for="courseSelect">Course:</label>
+        <select id="courseSelect">
+            <option value="">-- select course --</option>
+            {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.code }} — {{ c.name }}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <small style="color:#999;">(Log in as a teacher to enable broadcasting)</small>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function appendMessage(role, text) {
+    const win = document.getElementById('chatWindow');
+    const div = document.createElement('div');
+    div.className = `chat-message ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    div.appendChild(bubble);
+    win.appendChild(div);
+    win.scrollTop = win.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    appendMessage('user', text);
+    input.value = '';
+
+    const broadcast = document.getElementById('broadcastToggle').checked;
+    const courseId = document.getElementById('courseSelect') ? document.getElementById('courseSelect').value : null;
+
+    appendMessage('ai', 'Thinking...');
+    const lastAi = document.querySelectorAll('#chatWindow .chat-message.ai .bubble');
+    const placeholder = lastAi[lastAi.length-1];
+
+    try {
+        const resp = await fetch('{% url "ai_chat_api" %}', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({message: text, broadcast: broadcast, course_id: courseId})
+        });
+        const data = await resp.json();
+        if (data && data.reply) {
+            // replace placeholder
+            placeholder.textContent = data.reply;
+            if (data.broadcasted) {
+                appendMessage('ai', `Broadcasted to ${data.broadcasted} students.`);
+            }
+        } else if (data && data.error) {
+            placeholder.textContent = 'Error: ' + data.error;
+        } else {
+            placeholder.textContent = 'No response from AI.';
+        }
+    } catch (e) {
+        placeholder.textContent = 'Network error: ' + e.message;
+    }
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+document.getElementById('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+</script>
+
+{% endblock %}

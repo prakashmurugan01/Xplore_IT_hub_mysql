@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #f8fafc; }
+  .card { border-radius: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+  .student-select { max-height: 280px; overflow-y: auto; }
+  .notification-item { transition: background 0.2s ease; }
+  .notification-item:hover { background: #f1f5f9; }
+  /* Dark mode overrides */
+  .dark-mode body { background: #0b1220 !important; }
+  .dark-mode .card { background: #0f1724; color: #e6eef8; box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
+  .dark-mode .student-select { background: #07101a; }
+  .dark-mode .list-group-item { background: #0f1724; color: #cfe8ff; }
+  .dark-mode .form-control { background: #07101a; color: #e6eef8; border-color: rgba(255,255,255,0.06); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-bell"></i> Admin Notifications</h2>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back();">Back</button>
+      <a class="btn btn-sm btn-outline-danger" href="{% url 'role_redirect' %}">Cancel</a>
+    </div>
+  </div>
+
+  <!-- Notification Form -->
+  <div class="card p-4 mb-4">
+    <form id="notifyForm">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input class="form-control" name="title" placeholder="Enter notification title" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" name="message" rows="3" placeholder="Write your message..." required></textarea>
+      </div>
+
+      <!-- Student Selection -->
+      <div class="mb-3">
+        <label class="form-label">Select Students</label>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="selectAll" />
+          <label class="form-check-label" for="selectAll"><strong>Select All</strong></label>
+        </div>
+
+        <div class="d-flex mb-2 gap-2">
+          <div class="btn-group" role="group" aria-label="select-type">
+            <input type="radio" class="btn-check" name="typeSwitch" id="switchStudents" autocomplete="off" checked>
+            <label class="btn btn-outline-primary btn-sm" for="switchStudents">Students</label>
+
+            <input type="radio" class="btn-check" name="typeSwitch" id="switchTeachers" autocomplete="off">
+            <label class="btn btn-outline-primary btn-sm" for="switchTeachers">Teachers</label>
+          </div>
+          <div class="ms-auto d-flex gap-2 align-items-center">
+            <input id="searchBox" class="form-control form-control-sm" style="max-width:260px" placeholder="Search id / name / dept" />
+            <div class="form-check form-switch ms-2">
+              <input class="form-check-input" type="checkbox" id="darkToggle">
+              <label class="form-check-label small" for="darkToggle">Dark</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="student-select border rounded p-2 bg-white" id="listContainer">
+          <div id="studentsList">
+            {% for student in students %}
+              <div class="form-check student-row" data-name="{{ student.name|lower }}" data-email="{{ student.email|lower }}" data-id="{{ student.id }}" data-dept="{{ student.department|lower }}">
+                <input class="form-check-input student-checkbox" type="checkbox" name="recipients" value="profile:{{ student.id }}" id="student{{ student.id }}">
+                <label class="form-check-label" for="student{{ student.id }}">{{ student.name }} &lt;{{ student.email }}&gt; <small class="text-muted">• {{ student.department }}</small></label>
+              </div>
+            {% empty %}
+              <p class="text-muted small">No students available.</p>
+            {% endfor %}
+          </div>
+          <div id="teachersList" class="d-none">
+            {% for teacher in teachers %}
+              <div class="form-check student-row" data-name="{{ teacher.name|lower }}" data-email="{{ teacher.email|lower }}" data-id="{{ teacher.id }}" data-dept="{{ teacher.department|lower }}">
+                <input class="form-check-input student-checkbox" type="checkbox" name="recipients" value="profile:{{ teacher.id }}" id="teacher{{ teacher.id }}">
+                <label class="form-check-label" for="teacher{{ teacher.id }}">{{ teacher.name }} &lt;{{ teacher.email }}&gt; <small class="text-muted">• {{ teacher.department }}</small></label>
+              </div>
+            {% empty %}
+              <p class="text-muted small">No teachers available.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100" type="submit" id="sendBtn">
+        <i class="bi bi-send"></i> Send Notification
+      </button>
+    </form>
+  </div>
+
+  <!-- Notification History -->
+  <div class="card p-4">
+    <h4 class="mb-3"><i class="bi bi-clock-history"></i> Recent Notifications</h4>
+    <ul class="list-group">
+      {% for n in notifications %}
+      <li class="list-group-item notification-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ n.title }}</strong> — {{ n.message }}
+            <div class="text-muted small">{{ n.created_at|date:"d M Y, h:i A" }}</div>
+          </div>
+          <span class="badge bg-secondary">{{ n.recipients_count }} Sent</span>
+        </div>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted text-center">No notifications found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // helper to read CSRF cookie
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Select/Deselect All (applies only to visible / filtered items)
+    const selectAll = document.getElementById('selectAll');
+    function setSelectAllBehavior() {
+      if (!selectAll) return;
+      selectAll.addEventListener('change', function() {
+        const visible = document.querySelectorAll('#listContainer .student-row:not(.d-none) .student-checkbox');
+        visible.forEach(cb => cb.checked = this.checked);
+      });
+    }
+    setSelectAllBehavior();
+
+    // Type switch (Students / Teachers)
+    const switchStudents = document.getElementById('switchStudents');
+    const switchTeachers = document.getElementById('switchTeachers');
+    const studentsList = document.getElementById('studentsList');
+    const teachersList = document.getElementById('teachersList');
+    function showStudents() { studentsList.classList.remove('d-none'); teachersList.classList.add('d-none'); selectAll.checked = false; }
+    function showTeachers() { teachersList.classList.remove('d-none'); studentsList.classList.add('d-none'); selectAll.checked = false; }
+    if (switchStudents && switchTeachers) {
+      switchStudents.addEventListener('change', showStudents);
+      switchTeachers.addEventListener('change', showTeachers);
+    }
+
+    // Search/filter
+    const searchBox = document.getElementById('searchBox');
+    function applyFilter() {
+      const q = (searchBox.value || '').trim().toLowerCase();
+      const active = studentsList.classList.contains('d-none') ? teachersList : studentsList;
+      const rows = active.querySelectorAll('.student-row');
+      rows.forEach(r => {
+        const name = r.getAttribute('data-name') || '';
+        const email = r.getAttribute('data-email') || '';
+        const id = r.getAttribute('data-id') || '';
+        const dept = r.getAttribute('data-dept') || '';
+        const match = !q || name.includes(q) || email.includes(q) || id.includes(q) || dept.includes(q);
+        if (match) r.classList.remove('d-none'); else r.classList.add('d-none');
+      });
+      // Uncheck selectAll when filtering
+      if (selectAll) selectAll.checked = false;
+    }
+    if (searchBox) searchBox.addEventListener('input', applyFilter);
+
+    const notifyForm = document.getElementById('notifyForm');
+    const sendBtn = document.getElementById('sendBtn');
+
+    notifyForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = this.title.value.trim();
+      const message = this.message.value.trim();
+  const selected = Array.from(document.querySelectorAll('.student-checkbox:checked')).map(cb => cb.value);
+
+      if (!title || !message) {
+        alert('Please fill in title and message.');
+        return;
+      }
+      if (selected.length === 0) {
+        alert('Select at least one student.');
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+
+      try {
+        const url = '{% url "admin2_notifications" %}';
+        const csrftoken = getCookie('csrftoken');
+        const params = new URLSearchParams();
+        params.append('title', title);
+        params.append('message', message);
+        // append each recipient id as repeated field (we send raw profile ids)
+        selected.forEach(val => {
+          // values are like "profile:<id>" (keeps future extensibility)
+          if (val.startsWith('profile:')) {
+            params.append('students', val.split(':',2)[1]);
+          } else {
+            params.append('students', val);
+          }
+        });
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+          body: params
+        });
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          // If JSON returned, show count; otherwise reload
+          if (data && data.success) {
+            alert('Notifications sent to ' + (data.sent || 'some') + ' recipients.');
+            location.reload();
+          } else {
+            // Non-JSON fallback
+            location.reload();
+          }
+        } else {
+          alert('Error sending notifications.');
+        }
+      } catch (error) {
+        alert('Failed: ' + error);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="bi bi-send"></i> Send Notification';
+      }
+    });
+
+    // Dark mode toggle
+    const darkToggle = document.getElementById('darkToggle');
+    function applyDarkMode(enabled) {
+      if (enabled) document.documentElement.classList.add('dark-mode'); else document.documentElement.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', enabled ? '1' : '0');
+      if (darkToggle) darkToggle.checked = enabled;
+    }
+    // Initialize from saved preference
+    const saved = localStorage.getItem('darkMode');
+    applyDarkMode(saved === '1');
+    if (darkToggle) darkToggle.addEventListener('change', function() { applyDarkMode(this.checked); });
+  });
+</script>
+{% endblock %}

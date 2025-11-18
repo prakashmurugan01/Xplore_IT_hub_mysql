@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Staff Attendance (Webcam Check-in)</h2>
+    <div>
+      <span class="me-2 small text-muted">Role: <strong>{{ request.user.profile.role }}</strong></span>
+      <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back</a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Webcam Capture</h5>
+          <p class="small text-muted">Allow camera access, then click Capture to take a photo and record attendance.</p>
+
+          <video id="video" width="100%" autoplay playsinline style="background:#000; border-radius:4px"></video>
+          <canvas id="canvas" style="display:none;"></canvas>
+
+          <div class="mt-3">
+            <button id="startBtn" class="btn btn-outline-primary">Start Camera</button>
+            <button id="captureBtn" class="btn btn-primary">Capture</button>
+            <button id="stopBtn" class="btn btn-outline-secondary">Stop</button>
+          </div>
+
+          <form id="uploadForm" method="post" enctype="multipart/form-data" style="display:none;">
+            {% csrf_token %}
+            <input type="file" name="image" id="imageInput" />
+            <input type="hidden" name="recognized_username" id="recognizedInput" />
+          </form>
+
+          <div id="cameraMsg" class="mt-2"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Manual Check-in</h5>
+          <p class="small text-muted">Select a staff member and click Check-in (useful when camera not available).</p>
+          <form id="manualForm" method="post">
+            {% csrf_token %}
+            <div class="mb-2">
+              <select id="staffSelect" class="form-select">
+                <option value="">-- Select staff --</option>
+                {% for s in staff_members %}
+                <option value="{{ s.profile.user.username }}">{{ s.profile.user.get_full_name|default:s.profile.user.username }} ({{ s.position }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button id="manualCheckin" class="btn btn-success">Check-in</button>
+          </form>
+          <div id="manualMsg" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Recent Check-ins</h5>
+          <div id="recentList">
+            <p class="text-muted">Loading...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Minimal client-side JS for webcam capture and polling
+(function(){
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const startBtn = document.getElementById('startBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const cameraMsg = document.getElementById('cameraMsg');
+  let stream = null;
+
+  function getCsrfToken() {
+    // prefer cookie-based CSRF (Django default)
+    const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[2]) : '';
+  }
+
+  startBtn.addEventListener('click', async function(e){
+    e.preventDefault();
+    cameraMsg.textContent = '';
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video: true});
+      video.srcObject = stream;
+      cameraMsg.textContent = 'Camera active';
+    }catch(err){
+      cameraMsg.innerHTML = '<span class="text-danger">Unable to access camera: '+err.message+'</span>';
+    }
+  });
+
+  stopBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    if(stream){
+      stream.getTracks().forEach(t=>t.stop());
+      video.srcObject = null;
+      stream = null;
+      cameraMsg.textContent = 'Camera stopped';
+    }
+  });
+
+  captureBtn.addEventListener('click', async function(e){
+    e.preventDefault();
+    if(!stream){
+      cameraMsg.innerHTML = '<span class="text-warning">Start the camera first.</span>';
+      return;
+    }
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+    canvas.toBlob(async function(blob){
+      if(!blob) return;
+      cameraMsg.innerHTML = 'Uploading...';
+      const fd = new FormData();
+      fd.append('image', blob, 'capture.jpg');
+      // optional recognized username may be provided by a face service; left blank in MVP
+      // include csrf
+      const csrf = getCsrfToken();
+      try{
+        const resp = await fetch('{% url "superadmin_staff_attendance_recognize" %}', {
+          method: 'POST',
+          headers: csrf ? {'X-CSRFToken': csrf} : {},
+          body: fd,
+          credentials: 'same-origin'
+        });
+        const data = await resp.json();
+        if(data && data.success){
+          cameraMsg.innerHTML = '<span class="text-success">Check-in recorded: '+(data.recognized_username || data.staff_id || data.timestamp)+'</span>';
+          loadRecent();
+        }else{
+          cameraMsg.innerHTML = '<span class="text-danger">Error recording check-in</span>';
+        }
+      }catch(err){
+        cameraMsg.innerHTML = '<span class="text-danger">Upload failed: '+err.message+'</span>';
+      }
+    }, 'image/jpeg', 0.85);
+  });
+
+  // Manual form submit
+  document.getElementById('manualForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const sel = document.getElementById('staffSelect');
+    const username = sel.value;
+    const msg = document.getElementById('manualMsg');
+    if(!username){ msg.innerHTML = '<span class="text-warning">Select a staff member</span>'; return; }
+    msg.innerHTML = 'Recording...';
+    const fd = new FormData();
+    fd.append('recognized_username', username);
+    const csrf = getCsrfToken();
+    try{
+      const resp = await fetch('{% url "superadmin_staff_attendance_recognize" %}', { method: 'POST', headers: csrf ? {'X-CSRFToken': csrf} : {}, body: fd, credentials: 'same-origin' });
+      const data = await resp.json();
+      if(data && data.success){ msg.innerHTML = '<span class="text-success">Check-in recorded for '+username+'</span>'; loadRecent(); }
+      else msg.innerHTML = '<span class="text-danger">Failed to record check-in</span>';
+    }catch(err){ msg.innerHTML = '<span class="text-danger">Error: '+err.message+'</span>'; }
+  });
+
+  // Polling recent records
+  async function loadRecent(){
+    try{
+      const resp = await fetch('{% url "superadmin_staff_attendance_updates" %}');
+      const data = await resp.json();
+      const div = document.getElementById('recentList');
+      if(!data || !data.records) { div.innerHTML = '<p class="text-muted">No records</p>'; return; }
+      let html = '<ul class="list-group">';
+      for(const r of data.records){
+        const img = r.image_url ? '<img src="'+r.image_url+'" style="height:40px;width:40px;object-fit:cover;border-radius:4px;margin-right:8px;"/>' : '';
+        html += '<li class="list-group-item d-flex align-items-center">'+img+'<div><strong>'+r.user+'</strong><div class="small text-muted">'+new Date(r.timestamp).toLocaleString()+' &middot; '+r.method+'</div></div></li>';
+      }
+      html += '</ul>';
+      div.innerHTML = html;
+    }catch(err){
+      const div = document.getElementById('recentList');
+      div.innerHTML = '<p class="text-danger">Error loading recent: '+err.message+'</p>';
+    }
+  }
+
+  // initial load and periodic refresh
+  loadRecent();
+  setInterval(loadRecent, 5000);
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,595 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Superadmin Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* 🌙 Modern Glass Dashboard Theme */
+body {
+  background: radial-gradient(circle at top left, #0f172a, #020617 60%);
+  color: #e2e8f0;
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+  transition: all 0.5s ease;
+}
+
+body.light-mode {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  color: #0f172a;
+}
+
+.container {
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transition: all 0.4s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  border-color: #3b82f6;
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.25);
+}
+
+body.light-mode .dashboard-card {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1e293b;
+}
+
+/* Header Buttons */
+.btn-outline-light, .btn-primary {
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+}
+
+/* Theme Toggle Button */
+#theme-toggle {
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 1.2rem;
+  transition: 0.3s;
+}
+#theme-toggle:hover {
+  color: #3b82f6;
+  transform: rotate(15deg);
+}
+
+/* Titles */
+h1, h5 {
+  color: #f8fafc;
+  letter-spacing: 0.5px;
+}
+
+body.light-mode h1, body.light-mode h5 {
+  color: #1e293b;
+}
+
+/* Stat Boxes */
+.stat-number {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+.stat-label {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+/* Table Styling */
+.table-dark {
+  border-radius: 10px;
+  overflow: hidden;
+  border: none;
+}
+.table-dark th {
+  color: #93c5fd;
+}
+.table-dark td {
+  color: #e2e8f0;
+}
+.table-dark tbody tr:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transition: 0.3s;
+}
+
+/* Quick Actions */
+.dashboard-card a.btn {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.dashboard-card a.btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+}
+
+/* Chart.js Canvas Container */
+canvas {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Attendance Counters */
+.card.p-2 {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  color: #e2e8f0;
+  transition: 0.3s;
+}
+.card.p-2:hover {
+  background: rgba(59, 130, 246, 0.15);
+  transform: translateY(-3px);
+}
+
+/* Modal */
+.modal-content {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Superadmin Dashboard</h1>
+    <div class="d-flex align-items-center gap-2">
+      <button id="theme-toggle" title="Toggle Light/Dark Mode">
+        <i class="fas fa-moon"></i>
+      </button>
+      <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-light"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+      <a href="{% url 'admin2_staff' %}" class="btn btn-outline-light"><i class="fas fa-users"></i> Manage Staff</a>
+      <a href="{% url 'superadmin_staff_attendance' %}" class="btn btn-outline-light"><i class="fas fa-camera"></i> Staff Attendance</a>
+      <a href="{% url 'admin2_financial' %}" class="btn btn-outline-light"><i class="fas fa-chart-line"></i> Finance</a>
+      <a href="{% url 'admin2_notifications' %}" class="btn btn-outline-light"><i class="fas fa-bell"></i> Notifications</a>
+      <a href="{% url 'export_users_pdf' %}" class="btn btn-outline-light"><i class="fas fa-file-pdf"></i> Export Users</a>
+      <a href="{% url 'admin_ai_insights' %}" class="btn btn-outline-light"><i class="fas fa-robot"></i> AI Insights</a>
+      <a href="{% url 'staff_attendance_marked' %}" id="one-click-attendance" class="btn btn-success"><i class="fas fa-hand-pointer"></i> Staff Attendance Details</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_students" class="stat-number display-6">{{ total_students }}</div>
+        <div class="stat-label">Students</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_teachers" class="stat-number display-6">{{ total_teachers }}</div>
+        <div class="stat-label">Teachers</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_total_courses" class="stat-number display-6">{{ total_courses }}</div>
+        <div class="stat-label">Courses</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="dashboard-card p-3">
+        <div id="su_other_count" class="stat-number display-6">{{ other_count }}</div>
+        <div class="stat-label">Other Users</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="dashboard-card p-3 mb-3">
+        <h5>Recent Registrations</h5>
+        <table class="table table-dark table-striped mt-2">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="su_recent_users" data-report-url-template="{% url 'admin_download_student_report' 0 %}">
+              {% for u in recent_users %}
+              <tr data-user-id="{{ u.id }}">
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.profile.role|default:'-' }}</td>
+                <td>{{ u.date_joined|date:'Y-m-d' }}</td>
+                <td><a class="btn btn-sm btn-light" href="{% url 'admin_download_student_report' u.id %}"><i class="fas fa-download"></i> Report</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+      </div>
+
+      <div class="dashboard-card p-3">
+        <h5>Signups (last 7 days)</h5>
+        <canvas id="signupsChart" height="120"></canvas>
+      </div>
+
+      <div class="dashboard-card p-3 mt-3">
+        <h5>Staff Attendance (Today)</h5>
+        <div class="d-flex gap-2 mb-3">
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Total Staff</div>
+            <div id="totalStaffCount" class="h4">0</div>
+          </div>
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Present</div>
+            <div id="presentCount" class="h4 text-success">0</div>
+          </div>
+          <div class="card p-2 text-center" style="min-width:120px;">
+            <div class="small text-muted">Absent</div>
+            <div id="absentCount" class="h4 text-danger">0</div>
+          </div>
+        </div>
+
+        <div class="mb-2 d-flex gap-2 align-items-center">
+          <input id="attendanceDate" type="date" class="form-control form-control-sm" style="width:170px;" />
+          <input id="attendanceDept" type="text" placeholder="Department (optional)" class="form-control form-control-sm" style="width:200px;" />
+          <select id="historyDays" class="form-control form-control-sm" style="width:120px;"><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select>
+          <button id="attendanceRefresh" class="btn btn-sm btn-outline-light">Refresh</button>
+          <a id="attendanceExport" class="btn btn-sm btn-light" href="#">Export</a>
+        </div>
+
+        <div style="max-height:320px; overflow:auto;">
+          <table class="table table-sm table-dark table-striped">
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Dept</th>
+                <th>Position</th>
+                <th>Today</th>
+                <th>Last</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="dashboard-card p-3 mb-3">
+        <h5>Quick Actions</h5>
+        <a href="{% url 'superadmin_full_lists' %}" class="btn btn-primary w-100 mb-2"><i class="fas fa-list-alt me-2"></i> Full Lists</a>
+        <!-- <button id="showStudentsBtn" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-user-graduate me-2"></i> Show Students</button>
+        <button id="showStaffBtn" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-user-tie me-2"></i> Show Staff</button> -->
+        <a href="{% url 'admin2_staff' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-users me-2"></i> Manage Staff</a>
+        <a href="{% url 'superadmin_staff_attendance' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-camera me-2"></i> Staff Attendance</a>
+        <a href="{% url 'admin2_financial' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-chart-line me-2"></i> Finance</a>
+        <a href="{% url 'admin2_notifications' %}" class="btn btn-outline-light w-100 mb-2"><i class="fas fa-bell me-2"></i> Notifications</a>
+        <a href="{% url 'export_users_pdf' %}" class="btn btn-outline-light w-100"><i class="fas fa-file-export me-2"></i> Export Users</a>
+      </div>
+
+      <div class="dashboard-card p-3">
+        <h5>Recent Alerts</h5>
+        <ul class="list-group list-group-flush mt-2">
+          <li class="list-group-item bg-transparent border-0 text-light">No critical alerts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal used to show student/staff lists -->
+  <div class="modal fade" id="suListModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header d-flex flex-column align-items-start gap-2">
+        <div class="w-100 d-flex align-items-center justify-content-between">
+          <h5 class="modal-title" id="suListModalLabel">List</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="w-100 d-flex gap-2">
+          <input id="suSearchInput" class="form-control form-control-sm" placeholder="Search by name, id or department" />
+          <button id="suSearchBtn" class="btn btn-sm btn-primary">Search</button>
+          <button id="suClearBtn" class="btn btn-sm btn-secondary">Clear</button>
+        </div>
+      </div>
+      <div class="modal-body" id="suListModalBody">
+        <!-- content injected via AJAX -->
+        <div class="text-center text-muted">Loading...</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ signup_labels|json_script:'signup-labels-json' }}
+{{ signup_counts|json_script:'signup-counts-json' }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Theme toggle logic with memory -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('theme-toggle');
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme === 'light') {
+    document.body.classList.add('light-mode');
+    toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+  
+  toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    toggleBtn.innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const labels = JSON.parse(document.getElementById('signup-labels-json').textContent || '[]');
+  const data = JSON.parse(document.getElementById('signup-counts-json').textContent || '[]');
+
+  const ctx = document.getElementById('signupsChart').getContext('2d');
+  const signupsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{ label: 'Signups', data: data, backgroundColor: '#4F46E5', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  // Polling for live updates
+  async function fetchSuperUpdates(){
+    try{
+      const res = await fetch('{% url "superadmin_updates" %}');
+  if(!res.ok) return;
+      const j = await res.json();
+      document.getElementById('su_total_students').textContent = j.total_students;
+      document.getElementById('su_total_teachers').textContent = j.total_teachers;
+      document.getElementById('su_total_courses').textContent = j.total_courses;
+      document.getElementById('su_other_count').textContent = j.other_count;
+
+      // Update recent users table
+      const tbody = document.getElementById('su_recent_users');
+      tbody.innerHTML = '';
+      const reportTemplate = tbody.dataset.reportUrlTemplate || '/superadmin/download-report/0/';
+      j.recent_users.forEach(u=>{
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-user-id', u.id);
+        // Build report URL by replacing the placeholder '0' in the template with user id
+        const reportUrl = reportTemplate.replace('/0/', `/${u.id}/`);
+        tr.innerHTML = `<td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(u.joined)}</td><td><a class="btn btn-sm btn-light" href="${reportUrl}"><i class="fas fa-download"></i> Report</a></td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Update chart
+      signupsChart.data.labels = j.signup_labels;
+      signupsChart.data.datasets[0].data = j.signup_counts;
+      signupsChart.update();
+    }catch(e){ console.warn('superadmin updates failed', e); }
+  }
+
+  // run initial fetch and poll every 10s
+  fetchSuperUpdates();
+  setInterval(fetchSuperUpdates, 10000);
+
+  // Attendance fetching and rendering
+  const attendanceDate = document.getElementById('attendanceDate');
+  const attendanceDept = document.getElementById('attendanceDept');
+  const historyDays = document.getElementById('historyDays');
+  const attendanceBody = document.getElementById('attendanceBody');
+  const totalStaffCount = document.getElementById('totalStaffCount');
+  const presentCountEl = document.getElementById('presentCount');
+  const absentCountEl = document.getElementById('absentCount');
+  const attendanceExport = document.getElementById('attendanceExport');
+
+  // Initialize date input to today
+  if(attendanceDate) attendanceDate.value = new Date().toISOString().slice(0,10);
+
+  async function fetchAttendance() {
+    try{
+      const date = attendanceDate.value;
+      const dept = attendanceDept.value;
+      const days = historyDays.value || 7;
+      const params = new URLSearchParams();
+      if(date) params.set('date', date);
+      if(dept) params.set('department', dept);
+      if(days) params.set('days', days);
+
+      const res = await fetch('{% url "admin2_attendance_list" %}?'+params.toString());
+      if(!res.ok) return;
+      const j = await res.json();
+      // compute totals
+      const recs = j.records || [];
+      totalStaffCount.textContent = recs.length;
+      const present = recs.filter(r=>r.status==='present').length;
+      const absent = recs.filter(r=>r.status==='absent').length;
+      presentCountEl.textContent = present;
+      absentCountEl.textContent = absent;
+
+      // populate table
+      attendanceBody.innerHTML = '';
+      recs.forEach(r=>{
+        const tr = document.createElement('tr');
+        const photoHtml = r.photo_url ? `<img src="${r.photo_url}" style="width:36px; height:36px; object-fit:cover; border-radius:50%; margin-right:8px;">` : '';
+        tr.innerHTML = `<td>${photoHtml}<strong>${escapeHtml(r.full_name||r.username)}</strong><div class="small text-muted">${escapeHtml(r.username)}</div></td><td>${escapeHtml(r.department)}</td><td>${escapeHtml(r.position)}</td><td>${r.status}</td><td>${r.last_attendance?new Date(r.last_attendance).toLocaleString():'-'}</td><td><button class='btn btn-sm btn-light view-details' data-staff='${r.staff_id}'>Details</button></td>`;
+        attendanceBody.appendChild(tr);
+      });
+
+      // update export link
+      attendanceExport.href = '{% url "admin2_export_attendance" %}?'+params.toString();
+
+    }catch(e){ console.warn('attendance fetch failed', e); }
+  }
+
+  // initial fetch
+  fetchAttendance();
+  document.getElementById('attendanceRefresh').addEventListener('click', fetchAttendance);
+
+  // delegate click for details (simple modal)
+  document.body.addEventListener('click', function(ev){
+    if(ev.target && ev.target.matches('.view-details')){
+      const staffId = ev.target.dataset.staff;
+      // find record in current table (we have recs in closure?) -> re-fetch single staff via same list with staff_id filter
+      (async ()=>{
+        try{
+          const date = attendanceDate.value;
+          const days = historyDays.value || 7;
+          const res = await fetch('{% url "admin2_attendance_list" %}?date='+encodeURIComponent(date||'')+'&days='+encodeURIComponent(days)+'&staff_id='+encodeURIComponent(staffId));
+          if(!res.ok) return;
+          const j = await res.json();
+          const rec = (j.records||[])[0];
+          if(!rec) return alert('Details not found');
+          // build details HTML and show via native alert (simple). For a nicer UI, replace with modal.
+          let msg = `Name: ${rec.full_name || rec.username}\nDepartment: ${rec.department}\nPosition: ${rec.position}\nToday: ${rec.status}\nLast: ${rec.last_attendance || '-'}\n\nRecent History:\n`;
+          for(let i=0;i<rec.history_dates.length;i++){ msg += `${rec.history_dates[i]}: ${rec.history[i] || '-'}\n`; }
+          alert(msg);
+        }catch(e){ console.error(e); }
+      })();
+    }
+  });
+
+  // One-click attendance button handler
+  const oneClickBtn = document.getElementById('one-click-attendance');
+  if(oneClickBtn){
+    oneClickBtn.addEventListener('click', async function(e){
+      if(!confirm('Mark attendance now for today using existing check-ins? This will update daily attendance for all staff. Proceed?')) return;
+      try{
+        const csrftoken = (document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))||'').split('=')[1];
+        const res = await fetch('{% url "one_click_attendance" %}', {method: 'POST', headers: {'X-CSRFToken': csrftoken, 'Accept': 'application/json'}});
+        if(!res.ok){ alert('Attendance marking failed'); return; }
+        const j = await res.json();
+        if(j.success){
+          alert('Attendance marked. Present: '+j.summary.present+' | Absent: '+j.summary.absent);
+          // Optionally refresh attendance summary widget if present
+          fetchSuperUpdates();
+        } else {
+          alert('Attendance endpoint returned an error');
+        }
+      }catch(err){ console.error(err); alert('Failed to mark attendance'); }
+    });
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#x60;'}[c])); }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const showStudentsBtn = document.getElementById('showStudentsBtn');
+  const showStaffBtn = document.getElementById('showStaffBtn');
+  const modalEl = document.getElementById('suListModal');
+  const modalBody = document.getElementById('suListModalBody');
+  const modalTitle = document.getElementById('suListModalLabel');
+  let bsModal = null;
+  if(modalEl){ bsModal = new bootstrap.Modal(modalEl); }
+
+  async function fetchAndShow(url, title){
+    try{
+      modalTitle.textContent = title;
+      modalBody.innerHTML = '<div class="text-center text-muted">Loading...</div>';
+      if(bsModal) bsModal.show();
+      const res = await fetch(url);
+      // If server returned non-OK status, surface a helpful message
+      if(!res.ok){
+        const text = await res.text().catch(()=>null);
+        console.warn('fetchAndShow non-ok response', res.status, res.statusText, text);
+        modalBody.innerHTML = `<div class="text-danger">Failed to load list (status ${res.status}).</div><pre style="white-space:pre-wrap;">${escapeHtml(text||res.statusText)}</pre>`;
+        return;
+      }
+
+      // Try to parse JSON. If the response is HTML (for example a login redirect), fall back to showing the HTML/text.
+      let json = null;
+      const contentType = res.headers.get('content-type') || '';
+      if(contentType.includes('application/json')){
+        try{
+          json = await res.json();
+        }catch(err){
+          console.error('Failed to parse JSON from response', err);
+        }
+      } else {
+        // Not JSON - likely an HTML page (login). Show a trimmed preview.
+        const txt = await res.text().catch(()=>null);
+        console.warn('fetchAndShow received non-JSON response', contentType, txt);
+        modalBody.innerHTML = `<div class="text-warning">Server returned HTML (possible redirect to login or error page).</div><div style="max-height:400px; overflow:auto; background:#0b1220; padding:8px; border-radius:6px;"><pre style="color:#ddd; white-space:pre-wrap;">${escapeHtml((txt||'').slice(0,2000))}</pre></div>`;
+        return;
+      }
+
+      if(json && json.success && json.html){ modalBody.innerHTML = json.html; }
+      else if(json && json.html){ modalBody.innerHTML = json.html; }
+      else { modalBody.innerHTML = '<div class="text-muted">No data.</div>'; }
+    }catch(e){ console.error(e); modalBody.innerHTML = '<div class="text-danger">Error loading list.</div>'; }
+  }
+
+  if(showStudentsBtn){ showStudentsBtn.addEventListener('click', ()=> fetchAndShow('{% url "superadmin_student_list" %}', 'Students')); }
+  if(showStaffBtn){ showStaffBtn.addEventListener('click', ()=> fetchAndShow('{% url "superadmin_staff_list" %}', 'Staff Members')); }
+  
+  // Modal search controls
+  const suSearchInput = document.getElementById('suSearchInput');
+  const suSearchBtn = document.getElementById('suSearchBtn');
+  const suClearBtn = document.getElementById('suClearBtn');
+  function currentListUrl(){
+    // if modal title contains 'Students' use student list endpoint otherwise staff
+    const title = (modalTitle && modalTitle.textContent||'').toLowerCase();
+    return title.includes('student') ? '{% url "superadmin_student_list" %}' : '{% url "superadmin_staff_list" %}';
+  }
+  if(suSearchBtn){
+    suSearchBtn.addEventListener('click', function(){
+      const q = (suSearchInput && suSearchInput.value) || '';
+      const url = currentListUrl() + (q ? ('?q=' + encodeURIComponent(q)) : '');
+      fetchAndShow(url, modalTitle.textContent || 'List');
+    });
+  }
+  if(suClearBtn){
+    suClearBtn.addEventListener('click', function(){
+      if(suSearchInput) suSearchInput.value = '';
+      const url = currentListUrl();
+      fetchAndShow(url, modalTitle.textContent || 'List');
+    });
+  }
+});
+</script>
+{% endblock %}

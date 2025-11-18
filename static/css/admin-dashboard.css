@@ -1,0 +1,202 @@
+
+/* Attendance specific styles */
+.attendance-stat-card {
+    min-width: 120px;
+}
+
+.attendance-date {
+    width: 170px;
+}
+
+.attendance-dept {
+    width: 200px;
+}
+
+.attendance-days {
+    width: 120px;
+}
+
+.attendance-table-container {
+    max-height: 320px;
+    overflow: auto;
+}
+
+/* Staff photo in attendance table */
+.staff-photo {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+/* Admin Dashboard Styles */
+body {
+    background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+    color: #e6eef8;
+    min-height: 100vh;
+}
+
+.dashboard-card {
+    background: rgba(30,41,59,0.9);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    color: #e6eef8;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.table-dark {
+    background-color: transparent;
+    color: #e6eef8;
+}
+
+.table-dark.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.table-dark td, .table-dark th {
+    border-color: #334155;
+}
+
+.btn-outline-light {
+    border-color: #475569;
+    color: #e6eef8;
+}
+
+.btn-outline-light:hover {
+    background-color: #475569;
+    border-color: #475569;
+    color: #e6eef8;
+}
+
+.btn-light {
+    background-color: #e2e8f0;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+.btn-light:hover {
+    background-color: #cbd5e1;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.form-control {
+    background-color: rgba(255,255,255,0.1);
+    border-color: #475569;
+    color: #e6eef8;
+}
+
+.form-control:focus {
+    background-color: rgba(255,255,255,0.15);
+    border-color: #60a5fa;
+    color: #e6eef8;
+    box-shadow: 0 0 0 0.25rem rgba(96,165,250,0.25);
+}
+
+.form-control::placeholder {
+    color: #94a3b8;
+}
+
+/* Status indicators */
+.h4.text-success {
+    color: #4ade80 !important;
+}
+
+.h4.text-danger {
+    color: #f87171 !important;
+}
+
+/* Quick stats cards */
+.card {
+    background-color: rgba(30,41,59,0.8);
+    border-color: #334155;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Table scrolling container */
+div[style*="overflow:auto"] {
+    scrollbar-width: thin;
+    scrollbar-color: #475569 transparent;
+}
+
+div[style*="overflow:auto"]::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+div[style*="overflow:auto"]::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+div[style*="overflow:auto"]::-webkit-scrollbar-thumb {
+    background-color: #475569;
+    border-radius: 4px;
+}
+
+/* Staff profile images */
+.staff-photo {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* Chart styling */
+canvas {
+    color: #e6eef8;
+}
+
+/* Attendance filters */
+.attendance-filters {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Export button styling */
+.export-btn {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.export-btn:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-cards {
+        flex-wrap: wrap;
+    }
+    
+    .stat-cards > div {
+        flex: 1 1 45%;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-cards > div {
+        flex: 1 1 100%;
+    }
+}

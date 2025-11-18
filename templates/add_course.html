@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Add Course</h2>
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Course Name</label>
+      <input class="form-control" type="text" name="name" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Course Code</label>
+      <input class="form-control" type="text" name="code">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Credits</label>
+      <input class="form-control" type="number" name="credits" min="0" value="3">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Semester</label>
+      <input class="form-control" type="text" name="semester">
+    </div>
+    <button class="btn btn-primary" type="submit">Create Course</button>
+    <a class="btn btn-secondary" href="{% url 'teacher_dashboard' %}">Back</a>
+  </form>
+</div>
+{% endblock %}

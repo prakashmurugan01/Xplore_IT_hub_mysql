@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About - Xplore IT Hub{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+
+
+<!-- Who We Are Section -->
+<section class="who-we-are">
+    <div class="container mt-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1>Who We are</h1>
+                <div class="who-we-are-image">
+                    <div class="yellow-border-top"></div>
+                    <div class="image-frame">
+                        <img src="{% static 'img\20251010_140247.jpg' %}" alt="Xplore IT Corp Team" onerror="this.src='https://via.placeholder.com/400x300?text=Team+Photo'">
+                    </div>
+                    <div class="yellow-border-bottom"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <p class="who-we-are-text">
+                    Xplore IT Hub is a comprehensive smart campus management system designed to revolutionize education technology. It focuses on industry-applicable skills and knowledge for the people.
+                </p>
+                <p class="who-we-are-text">
+                    Our courses are prepared in such a way that each student gets hands-on experiences and practical skills to work from day one. Xplore IT Hub provides the newest facilities, trained mentors, and student-centered methodologies to uphold excellence in education while creating a nurturing and innovative learning environment for all.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-6 col-sm-4 col-md-2">
+                <div class="stat-item">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-number" data-target="200000">0</div>
+                    <div class="stat-label">Students Trained</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-4 col-md-2">
+                <div class="stat-item">
+                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-number" data-target="350">0</div>
+                    <div class="stat-label">Institutions</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-4 col-md-2">
+                <div class="stat-item">
+                    <div class="stat-icon">🛠️</div>
+                    <div class="stat-number" data-target="1500">0</div>
+                    <div class="stat-label">Workshops Conducted</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-4 col-md-2">
+                <div class="stat-item">
+                    <div class="stat-icon">🏅</div>
+                    <div class="stat-number" data-target="12">0</div>
+                    <div class="stat-label">Years of Excellence</div>
+                </div>
+            </div>
+            <div class="col-6 col-sm-4 col-md-2">
+                <div class="stat-item">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-number" data-target="99">0</div>
+                    <div class="stat-label">Success Rate (%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Enhanced stats styles */
+    .stats-section .stat-item {
+        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+        border-radius: 12px;
+        padding: 18px 12px;
+        text-align: center;
+        margin: 10px 0;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+    .stats-section .stat-item:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+    .stat-icon {
+        font-size: 28px;
+        margin-bottom: 6px;
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+    background: linear-gradient(90deg, #7CB342, #FFC107);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .stat-label {
+        font-size: 0.95rem;
+        color: #ddd;
+    }
+    @media (max-width: 576px) {
+        .stat-number { font-size: 1.4rem; }
+    }
+</style>
+
+<script>
+    // Count-up animation triggered when stats-section is in view
+    document.addEventListener('DOMContentLoaded', function() {
+        const stats = document.querySelectorAll('.stats-section .stat-number');
+        if (!stats.length) return;
+
+        function animateCount(el, target) {
+            const isPercent = el.closest('.stat-item').querySelector('.stat-label').textContent.toLowerCase().includes('%');
+            const duration = 1200;
+            const start = 0;
+            const end = Number(target);
+            const startTime = performance.now();
+
+            function frame(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                el.textContent = (isPercent ? value + '%' : (end >= 1000 ? formatLarge(value) : value));
+                if (progress < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function formatLarge(n) {
+            if (n >= 1000000) return (n/1000000).toFixed(1) + 'M+';
+            if (n >= 1000) return (n/1000).toFixed(0) + 'k+';
+            return n;
+        }
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    stats.forEach(el => {
+                        const target = el.dataset.target || el.textContent;
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                        if (el.dataset.animated) return;
+                        animateCount(el, target);
+                        el.dataset.animated = '1';
+                    });
+                }
+            });
+        }, { threshold: 0.2 });
+
+        observer.observe(document.querySelector('.stats-section'));
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statItems = document.querySelectorAll('.stat-number');
+        statItems.forEach((item, index) => {
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 200); // Staggered animation
+        });
+    });
+</script>
+
+<!-- Features Section -->
+<section class="about-us">
+    <div class="container">
+        <div class="section-title">Key Features</div>
+        <h2 class="why-right-choice">Smart Campus Management System</h2>
+        <p class="choice-text">
+            Xplore IT Hub integrates advanced technology with education management to provide a seamless experience for students, teachers, and administrators.
+        </p>
+
+        <div class="vision-boxes">
+            <div class="vision-box">
+                <i class="fas fa-tachometer-alt"></i> Student Dashboards
+            </div>
+            <div class="vision-box">
+                <i class="fas fa-chalkboard-user"></i> Teacher Dashboards
+            </div>
+            <div class="vision-box">
+                <i class="fas fa-users-cog"></i> Admin Dashboards
+            </div>
+        </div>
+
+        <div class="vision-statement">
+            Our system provides comprehensive tools for attendance tracking, AI-based performance predictions, and automated PDF reports generation to support better educational outcomes and data-driven decision making.
+        </div>
+
+        <div class="row align-items-center mt-5">
+            <div class="col-lg-6">
+                <div class="about-image">
+                    <img src="{% static 'images/system.jpg' %}" alt="System Overview" onerror="this.src='https://via.placeholder.com/400x400?text=System+Overview'">
+                    <div class="yellow-accent"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h3 style="color: var(--primary-green); margin-bottom: 20px;">What We Offer</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 15px; color: var(--text-gray); line-height: 1.6;">
+                        <i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 10px;"></i>
+                        <strong>Attendance Tracking</strong> - Automated real-time attendance management
+                    </li>
+                    <li style="margin-bottom: 15px; color: var(--text-gray); line-height: 1.6;">
+                        <i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 10px;"></i>
+                        <strong>Performance Predictions</strong> - AI-powered student performance analytics
+                    </li>
+                    <li style="margin-bottom: 15px; color: var(--text-gray); line-height: 1.6;">
+                        <i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 10px;"></i>
+                        <strong>PDF Reports</strong> - Generate detailed performance and attendance reports
+                    </li>
+                    <li style="margin-bottom: 15px; color: var(--text-gray); line-height: 1.6;">
+                        <i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 10px;"></i>
+                        <strong>Role-Based Access</strong> - Secure dashboards for each user type
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- C-Suite Section -->
+<section class="csuite-section">
+    <div class="container">
+        <h2 class="csuite-title">Meet Our Leadership Team</h2>
+        <p class="csuite-intro">
+            Our leadership team comprises distinguished experts with years of experience in software development, data analytics, digital marketing, and AI solutions. Together, they ensure the highest standards of education and training.
+        </p>
+
+        <a href="{% url 'register' %}" class="enroll-btn">
+            <i class="fas fa-arrow-right"></i> Enroll Now
+        </a>
+
+        <div style="clear: both;"></div>
+
+        <div class="leaders-grid">
+            <div class="leader-card">
+                <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/sathis-1-1024x1024-1.webp" alt="CEO" class="leader-image" onerror="this.src='https://via.placeholder.com/250x300?text=Leader+1'">
+                <div class="leader-info">
+                    <div class="leader-name">Mr. Satheesh Chandran</div>
+                    <div class="leader-role">CEO & Digital Marketing Expert</div>
+                </div>
+            </div>
+            <div class="leader-card">
+                <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/Aravind-1-1024x1024-removebg-preview-1.png" alt="CTO" class="leader-image" onerror="this.src='https://via.placeholder.com/250x300?text=Leader+2'">
+                <div class="leader-info">
+                    <div class="leader-name">Mr. Aravinth Kuppusamy</div>
+                    <div class="leader-role">CTO & Data Analytics Expert</div>
+                </div>
+            </div>
+            <div class="leader-card">
+                <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/Indhu_profile_img-1-1024x1024-1.webp" alt="COO" class="leader-image" onerror="this.src='https://via.placeholder.com/250x300?text=Leader+3'">
+                <div class="leader-info">
+                    <div class="leader-name">Mrs. Indhu Shree</div>
+                    <div class="leader-role">COO & Full Stack Python Expert</div>
+                </div>
+            </div>
+            <div class="leader-card">
+                <img src="https://www.xploreitcorp.com/wp-content/uploads/2025/08/GOBINATH-1-removebg-preview-1.png" alt="CFO" class="leader-image" onerror="this.src='https://via.placeholder.com/250x300?text=Leader+4'">
+                <div class="leader-info">
+                    <div class="leader-name">Mr. Gobinath Arumugam</div>
+                    <div class="leader-role">CFO & AI Solutions Architect</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <h2 class="testimonials-title">What Students Say</h2>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">
+                    The platform's dashboard features are incredibly user-friendly. The attendance tracking system saved us so much time, and the AI performance predictions really helped identify students who needed extra support.
+                </p>
+                <div class="testimonial-name">Sneha Reddy</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">
+                    Xplore IT Hub's PDF report generation feature is fantastic. We can now generate comprehensive performance reports in seconds. The system is reliable and has significantly improved our academic management processes.
+                </p>
+                <div class="testimonial-name">Rajesh Kumar</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Section -->
+<section class="footer-section">
+    <div class="container">
+        <div class="footer-content">
+            <div>
+                <div class="footer-logo">
+                    <i class="fas fa-code"></i> XPLORE IT HUB
+                </div>
+                <div style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 20px;">Smart Campus Management</div>
+                <ul class="footer-contact">
+                    <li><a href="mailto:info@exploreit.com"><i class="fas fa-envelope"></i> info@exploreit.com</a></li>
+                    <li><a href="tel:+919047020807"><i class="fas fa-phone"></i> +91 9047020807</a></li>
+                    <li><a href="tel:+919047010807"><i class="fas fa-phone"></i> +91 9047010807</a></li>
+                </ul>
+                <div class="social-links">
+                    <div class="social-icon"><i class="fab fa-facebook"></i></div>
+                    <div class="social-icon"><i class="fab fa-instagram"></i></div>
+                    <div class="social-icon"><i class="fab fa-twitter"></i></div>
+                    <div class="social-icon"><i class="fab fa-linkedin"></i></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="footer-title">System Features</div>
+                <ul class="footer-links">
+                    <li><a href="#">Student Dashboard</a></li>
+                    <li><a href="#">Teacher Dashboard</a></li>
+                    <li><a href="#">Admin Dashboard</a></li>
+                    <li><a href="#">Attendance Tracking</a></li>
+                    <li><a href="#">Performance Analytics</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="footer-title">Resources</div>
+                <ul class="footer-links">
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">User Guide</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="footer-title">Contact Us</div>
+                <div class="address-text">
+                    <strong>Xplore IT Hub</strong><br>
+                    No:18, 2nd Floor, Tech Complex,<br>
+                    Kalingarayan Street, Ramnagar,<br>
+                    Coimbatore,<br>
+                    Tamil Nadu- 641 009<br><br>
+                    <strong>Hours:</strong><br>
+                    Mon-Fri: 9:00 AM - 6:00 PM<br>
+                    Sat: 10:00 AM - 4:00 PM
+                </div>
+            </div>
+        </div>
+
+        <hr style="margin: 40px 0; border-color: #ddd;">
+
+        <div style="text-align: center; color: var(--text-gray); font-size: 0.9rem;">
+            <p>&copy; 2024 Xplore IT Hub. All Rights Reserved. | Smart Campus Management System</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.leader-card, .testimonial-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    });
+</script>
+
+{% endblock %}

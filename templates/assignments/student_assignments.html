@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Assignments{% endblock %}
+
+{% block content %}
+<main class="container py-4">
+  <div class="mb-4">
+    <h2>My Assignments</h2>
+    <p class="text-muted">Upcoming and past assignments for your enrolled courses.</p>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back();">Back</button>
+      <a class="btn btn-sm btn-outline-danger" href="{% url 'role_redirect' %}">Cancel</a>
+    </div>
+  </div>
+
+  <section class="mb-4"></section>
+    <h4>Upcoming</h4>
+    {% if upcoming %}
+      <div class="list-group">
+        {% for a in upcoming %}
+          <a href="{% url 'student_assignment_detail' a.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ a.title }}</div>
+              <div class="small text-muted">{{ a.course.name }} — {% if a.due_date %}Due {{ a.due_date|date:'M d, Y' }}{% else %}<em>No due date</em>{% endif %}</div>
+            </div>
+            <div class="text-end">
+              {% if a.id in submitted_ids %}
+                <span class="badge bg-success">Submitted</span>
+              {% endif %}
+              <small class="text-muted">Max {{ a.max_marks }}</small>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No upcoming assignments.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h4>Past</h4>
+    {% if past %}
+      <div class="list-group">
+        {% for a in past %}
+          <a href="{% url 'student_assignment_detail' a.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ a.title }}</div>
+              <div class="small text-muted">{{ a.course.name }} — {% if a.due_date %}Due {{ a.due_date|date:'M d, Y' }}{% else %}<em>No due date</em>{% endif %}</div>
+            </div>
+            <div class="text-end">
+              {% if a.id in submitted_ids %}
+                <span class="badge bg-success">Submitted</span>
+              {% endif %}
+              <small class="text-muted">Max {{ a.max_marks }}</small>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No past assignments.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

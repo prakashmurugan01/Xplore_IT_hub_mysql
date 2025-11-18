@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Student{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2>Confirm Delete</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Admin Dashboard</a>
+  </div>
+  <p>Are you sure you want to permanently delete student <strong>{{ profile.user.username }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Yes, delete</button>
+    <a class="btn btn-secondary" href="{% url 'superadmin_student_management' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

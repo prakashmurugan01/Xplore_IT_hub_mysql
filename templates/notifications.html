@@ -1,0 +1,585 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --danger-color: #f44336;
+    --info-color: #00BCD4;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+  }
+
+  .notifications-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .notifications-header h2 {
+    color: white;
+    margin: 0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-glass {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+
+  .btn-glass:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .notification-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notification-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(33, 150, 243, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .notification-item:hover {
+    transform: translateX(8px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .notification-item:hover::before {
+    opacity: 1;
+  }
+
+  .notification-item.unread {
+    background: linear-gradient(to right, #e3f2fd 0%, #ffffff 50%);
+    border-left-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+  }
+
+  .notification-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+  }
+
+  .notif-success { 
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+    color: #155724; 
+  }
+  
+  .notif-warning { 
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
+    color: #856404; 
+  }
+  
+  .notif-danger { 
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+    color: #721c24; 
+  }
+  
+  .notif-info { 
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+    color: #0c5460; 
+  }
+
+  .filter-tabs {
+    background: white;
+    border-radius: 12px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-tab {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-tab:hover {
+    background: #f8f9fa;
+    color: var(--primary-color);
+  }
+
+  .filter-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+  }
+
+  .filter-tab .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .empty-state i {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .delete-btn {
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .notification-item:hover .delete-btn {
+    opacity: 1;
+  }
+
+  .notification-time {
+    font-size: 0.875rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .action-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: rgba(33, 150, 243, 0.05);
+  }
+
+  .action-link:hover {
+    color: var(--primary-dark);
+    background: rgba(33, 150, 243, 0.1);
+    transform: translateX(4px);
+  }
+
+  .unread-indicator {
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .notification-item {
+    animation: slideIn 0.4s ease;
+  }
+
+  .notification-item:nth-child(1) { animation-delay: 0.05s; }
+  .notification-item:nth-child(2) { animation-delay: 0.1s; }
+  .notification-item:nth-child(3) { animation-delay: 0.15s; }
+  .notification-item:nth-child(4) { animation-delay: 0.2s; }
+  .notification-item:nth-child(5) { animation-delay: 0.25s; }
+
+  .btn-action {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .notification-header-content {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.5rem;
+  }
+
+  .notification-body {
+    color: #6c757d;
+    line-height: 1.6;
+  }
+
+  .toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 1100;
+    animation: slideInUp 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .pagination {
+    margin-top: 2rem;
+  }
+
+  .page-link {
+    border-radius: 8px;
+    margin: 0 0.25rem;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  .page-item.active .page-link {
+    background: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .notifications-header {
+      padding: 1.5rem;
+    }
+
+    .header-actions {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .header-actions .btn {
+      flex: 1;
+    }
+
+    .filter-tabs {
+      flex-direction: column;
+    }
+
+    .filter-tab {
+      justify-content: space-between;
+    }
+
+    .notification-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+  <!-- Header Section -->
+  <div class="notifications-header">
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <h2>
+          <i class="fas fa-bell"></i>
+          Notifications
+          {% if unread_count > 0 %}
+            <span class="badge bg-danger rounded-pill">{{ unread_count }}</span>
+          {% endif %}
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Stay updated with your latest activities</p>
+      </div>
+      <div class="col-md-5">
+        <div class="header-actions justify-content-end">
+          <a href="{% url 'role_redirect' %}" class="btn btn-glass">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </a>
+          {% if unread_count > 0 %}
+          <form method="POST" action="{% url 'mark_all_read' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-glass">
+              <i class="fas fa-check-double"></i> Mark All Read
+            </button>
+          </form>
+          {% endif %}
+          <button class="btn btn-glass" onclick="location.reload()" title="Refresh">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">
+      <i class="fas fa-list"></i> All
+      <span class="badge bg-secondary">{{ notifications|length }}</span>
+    </button>
+    <button class="filter-tab" data-filter="unread">
+      <i class="fas fa-envelope"></i> Unread
+      <span class="badge bg-primary">{{ unread_count }}</span>
+    </button>
+    <button class="filter-tab" data-filter="read">
+      <i class="fas fa-envelope-open"></i> Read
+      <span class="badge bg-success">{{ notifications|length|add:"-"|add:unread_count }}</span>
+    </button>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-container">
+    {% for notif in notifications %}
+      <div class="notification-item {% if not notif.is_read %}unread{% endif %}" 
+           data-read="{% if notif.is_read %}true{% else %}false{% endif %}">
+        <div class="row align-items-start">
+          <div class="col-auto">
+            <div class="notification-icon notif-{{ notif.type|default:'info' }}">
+              {% if notif.type == 'success' %}
+                <i class="fas fa-check-circle"></i>
+              {% elif notif.type == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+              {% elif notif.type == 'danger' %}
+                <i class="fas fa-times-circle"></i>
+              {% else %}
+                <i class="fas fa-info-circle"></i>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="col">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="notification-header-content">
+                {% if not notif.is_read %}
+                  <span class="unread-indicator me-2"></span>
+                {% endif %}
+                {{ notif.title }}
+              </h5>
+              <span class="notification-time">
+                <i class="far fa-clock"></i>
+                {{ notif.created_at|timesince }} ago
+              </span>
+            </div>
+            
+            <p class="notification-body mb-3">{{ notif.message }}</p>
+            
+            {% if notif.action_url %}
+              <a href="{{ notif.action_url }}" class="action-link mb-3">
+                <i class="fas fa-external-link-alt"></i>
+                View Details
+              </a>
+            {% endif %}
+            
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+              {% if not notif.is_read %}
+                <form method="POST" action="{% url 'mark_as_read' %}" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="notif_id" value="{{ notif.id }}">
+                  <button type="submit" class="btn btn-sm btn-outline-primary btn-action">
+                    <i class="fas fa-check"></i> Mark as Read
+                  </button>
+                </form>
+              {% endif %}
+              
+              <form method="POST" action="{% url 'delete_notification' %}" class="d-inline delete-btn">
+                {% csrf_token %}
+                <input type="hidden" name="notif_id" value="{{ notif.id }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger btn-action" 
+                        onclick="return confirm('Are you sure you want to delete this notification?')">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">
+        <i class="fas fa-bell-slash fa-5x mb-4"></i>
+        <h4 class="text-muted mb-3">No notifications yet</h4>
+        <p class="text-muted">When you receive notifications, they'll appear here</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+  <nav aria-label="Notifications pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+            <i class="fas fa-chevron-left"></i> Previous
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+            Next <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Filter functionality
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Filter notifications
+      const filter = this.dataset.filter;
+      document.querySelectorAll('.notification-item').forEach(notif => {
+        if (filter === 'all') {
+          notif.style.display = 'block';
+        } else if (filter === 'unread') {
+          notif.style.display = notif.dataset.read === 'false' ? 'block' : 'none';
+        } else if (filter === 'read') {
+          notif.style.display = notif.dataset.read === 'true' ? 'block' : 'none';
+        }
+      });
+    });
+  });
+
+  // Real-time notification check (every 30 seconds)
+  setInterval(() => {
+    fetch(window.location.href, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.text())
+    .then(html => {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const newCount = doc.querySelector('.badge.bg-danger');
+      const current = document.querySelector('.badge.bg-danger');
+      
+      if (newCount && current && newCount.textContent !== current.textContent) {
+        showToast('New Notification', 'You have new notifications!');
+      }
+    })
+    .catch(() => {});
+  }, 30000);
+
+  // Toast notification function
+  function showToast(title, message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="fas fa-bell text-primary me-3" style="font-size: 24px;"></i>
+        <div>
+          <strong class="d-block">${title}</strong>
+          <span class="text-muted small">${message}</span>
+        </div>
+        <button class="btn-close ms-3" onclick="this.parentElement.parentElement.remove()"></button>
+      </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.animation = 'slideInUp 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  // Smooth scroll to top on page load
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+{% endblock %}

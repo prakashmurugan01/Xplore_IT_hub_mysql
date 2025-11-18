@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard (Advanced){% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>My Dashboard</h2>
+  <p>Modules: My Attendance, My Fees, Notifications, Reports — scaffolded links below.</p>
+
+  <div class="list-group">
+    <a class="list-group-item list-group-item-action" href="{% url 'view_attendance' %}">My Attendance</a>
+    <a class="list-group-item list-group-item-action" href="#">My Fees</a>
+    <a class="list-group-item list-group-item-action" href="{% url 'notifications' %}">My Notifications</a>
+    <a class="list-group-item list-group-item-action" href="#">My Reports</a>
+  </div>
+</div>
+{% endblock %}
