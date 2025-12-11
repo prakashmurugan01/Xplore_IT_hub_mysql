@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,13 +77,35 @@ WSGI_APPLICATION = 'xplorehub.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Database Configuration - MySQL Only
+# Requires the following environment variables to be set:
+#   DB_ENGINE (default: django.db.backends.mysql)
+#   DB_NAME (required)
+#   DB_USER (default: root)
+#   DB_PASSWORD (default: admin)
+#   DB_HOST (default: 127.0.0.1)
+#   DB_PORT (default: 3306)
+DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.mysql')
+DB_NAME = os.environ.get('DB_NAME', 'xplorehub_db')
+DB_USER = os.environ.get('DB_USER', 'root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'admin')
+DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
+DB_PORT = os.environ.get('DB_PORT', '3306')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': DB_ENGINE,
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

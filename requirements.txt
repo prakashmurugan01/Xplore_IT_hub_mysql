@@ -22,3 +22,5 @@ djangorestframework-simplejwt>=5.0
 
 # Optional / useful libraries (uncomment when used):
 # psycopg[binary]==2.9.6  # alternative exact pin for psycopg
+reportlab>=4.4.5
+
